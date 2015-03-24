@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
      Copyright (C) 2013 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,37 +13,32 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/menu_refresh"
         android:checkable="false"
         android:orderInCategory="1"
-        android:showAsAction="ifRoom"/>
+        android:showAsAction="ifRoom" />
     <item
         android:id="@+id/menu_connect"
         android:orderInCategory="100"
         android:showAsAction="ifRoom|withText"
-        android:title="@string/menu_connect"/>
+        android:title="@string/menu_connect" />
     <item
         android:id="@+id/menu_start_logging"
         android:orderInCategory="101"
         android:showAsAction="ifRoom|withText"
-        android:title="@string/menu_start_logging"/>
-    <item
-        android:id="@+id/menu_dropbox"
-        android:orderInCategory="101"
-        android:showAsAction="ifRoom|withText"
-        android:title="@string/menu_dropbox"/>
+        android:title="@string/menu_start_logging" />
     <item
         android:id="@+id/menu_stop_logging"
         android:orderInCategory="102"
         android:showAsAction="ifRoom|withText"
-        android:title="@string/menu_stop_logging"/>
+        android:title="@string/menu_stop_logging" />
     <item
         android:id="@+id/menu_disconnect"
         android:orderInCategory="103"
         android:showAsAction="ifRoom|withText"
-        android:title="@string/menu_disconnect"/>
+        android:title="@string/menu_disconnect" />
 
 </menu>
