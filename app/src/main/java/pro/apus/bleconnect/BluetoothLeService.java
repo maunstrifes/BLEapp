@@ -37,9 +37,17 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,6 +58,7 @@ import pro.apus.heartrate.R;
  * hosted on a given Bluetooth LE device.
  */
 public class BluetoothLeService extends Service {
+
     public final static String ACTION_GATT_CONNECTED = "pro.apus.heartrate.ACTION_GATT_CONNECTED";
     public final static String ACTION_GATT_DISCONNECTED = "pro.apus.heartrate.ACTION_GATT_DISCONNECTED";
     public final static String ACTION_GATT_SERVICES_DISCOVERED = "pro.apus.heartrate.ACTION_GATT_SERVICES_DISCOVERED";
@@ -90,8 +99,8 @@ public class BluetoothLeService extends Service {
 		@Override
 		public void onServicesDiscovered(BluetoothGatt gatt, int status) {
 			if (status == BluetoothGatt.GATT_SUCCESS) {
-				broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
-			} else {
+                displayGattServices(getSupportedGattServices());
+            } else {
 				Log.w(TAG, "onServicesDiscovered received: " + status);
 			}
 		}
@@ -110,11 +119,15 @@ public class BluetoothLeService extends Service {
 			broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
 		}
 	};
+    private final String LIST_NAME = "NAME";
+    private final String LIST_UUID = "UUID";
     private final IBinder mBinder = new LocalBinder();
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
+
+    private BluetoothGattCharacteristic mNotifyCharacteristic;
 
     private int mId = 1;
     private boolean started;
@@ -128,12 +141,79 @@ public class BluetoothLeService extends Service {
         }
         started = true;
 
-//        Notification notification = new Notification(R.drawable.ic_launcher, "BLE Logger",
-//                System.currentTimeMillis());
-//        Intent notificationIntent = new Intent(this, BluetoothLeService.class);
-//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-//        notification.setLatestEventInfo(this, "BLE", "BLE Logger", pendingIntent);
+        showNotification();
 
+        // Start Bluetooth
+        if (mBluetoothManager == null) {
+            mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+            if (mBluetoothManager == null) {
+                Log.e(TAG, "Unable to initialize BluetoothManager.");
+                throw new RuntimeException("Unable to initialize BluetoothManager.");
+            }
+        }
+
+        mBluetoothAdapter = mBluetoothManager.getAdapter();
+
+        String deviceAddress = intent.getStringExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS);
+        connect(deviceAddress);
+
+        return Service.START_NOT_STICKY;
+    }
+
+    // Demonstrates how to iterate through the supported GATT
+    // Services/Characteristics.
+    // In this sample, we populate the data structure that is bound to the
+    // ExpandableListView
+    // on the UI.
+    private void displayGattServices(List<BluetoothGattService> gattServices) {
+        if (gattServices == null)
+            return;
+        String uuid;
+        String unknownServiceString = getResources().getString(
+                R.string.unknown_service);
+        String unknownCharaString = getResources().getString(
+                R.string.unknown_characteristic);
+        ArrayList<HashMap<String, String>> gattServiceData = new ArrayList<HashMap<String, String>>();
+        ArrayList<ArrayList<HashMap<String, String>>> gattCharacteristicData = new ArrayList<ArrayList<HashMap<String, String>>>();
+
+        // Loops through available GATT Services.
+        for (BluetoothGattService gattService : gattServices) {
+            HashMap<String, String> currentServiceData = new HashMap<String, String>();
+            uuid = gattService.getUuid().toString();
+            currentServiceData.put(LIST_NAME,
+                    SampleGattAttributes.lookup(uuid, unknownServiceString));
+            currentServiceData.put(LIST_UUID, uuid);
+            gattServiceData.add(currentServiceData);
+
+            ArrayList<HashMap<String, String>> gattCharacteristicGroupData = new ArrayList<HashMap<String, String>>();
+            List<BluetoothGattCharacteristic> gattCharacteristics = gattService
+                    .getCharacteristics();
+            ArrayList<BluetoothGattCharacteristic> charas = new ArrayList<BluetoothGattCharacteristic>();
+
+            // Loops through available Characteristics.
+            for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+
+                if (UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT)
+                        .equals(gattCharacteristic.getUuid())) {
+                    Log.d(TAG, "Found heart rate");
+                    mNotifyCharacteristic = gattCharacteristic;
+                    setCharacteristicNotification(mNotifyCharacteristic, true);
+                }
+
+                charas.add(gattCharacteristic);
+                HashMap<String, String> currentCharaData = new HashMap<String, String>();
+                uuid = gattCharacteristic.getUuid().toString();
+                currentCharaData.put(LIST_NAME,
+                        SampleGattAttributes.lookup(uuid, unknownCharaString));
+                currentCharaData.put(LIST_UUID, uuid);
+                gattCharacteristicGroupData.add(currentCharaData);
+            }
+            gattCharacteristicData.add(gattCharacteristicGroupData);
+        }
+
+    }
+
+    private void showNotification() {
         Notification.Builder builder =
                 new Notification.Builder(this)
                         .setSmallIcon(R.drawable.ic_launcher)
@@ -158,17 +238,16 @@ public class BluetoothLeService extends Service {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         // mId allows you to update the notification later on.
         mNotificationManager.notify(mId, builder.build());
-
-        return Service.START_NOT_STICKY;
     }
 
-	private void broadcastUpdate(final String action) {
+    private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
         sendBroadcast(intent);
 	}
 
     private void broadcastUpdate(final String action,
                                  final BluetoothGattCharacteristic characteristic) {
+
         final Intent intent = new Intent(action);
 
         // This is special handling for the Heart Rate Measurement profile. Data
@@ -187,6 +266,7 @@ public class BluetoothLeService extends Service {
             }
             final int heartRate = characteristic.getIntValue(format, 1);
             Log.d(TAG, String.format("Received heart rate: %d", heartRate));
+            appendLog((new Date()).toString() + "," + heartRate);
             intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
         } else {
             // For all other profiles, writes the data formatted in HEX.
@@ -200,6 +280,8 @@ public class BluetoothLeService extends Service {
                         + stringBuilder.toString());
             }
         }
+
+        //TODO: auch intern verarbeiten: daten speichern (broadcast dzt nur zum Anzeigen, da sonst nicht geschrieben wird, während das service im hintergrund ist)
         sendBroadcast(intent);
     }
 
@@ -220,38 +302,6 @@ public class BluetoothLeService extends Service {
 	}
 
     /**
-     * Initializes a reference to the local Bluetooth adapter.
-     *
-     * @return Return true if the initialization is successful.
-     */
-    public boolean initialize() {
-
-        if (initialized) {
-            return true;
-        }
-        initialized = true;
-
-        // For API level 18 and above, get a reference to BluetoothAdapter
-        // through
-        // BluetoothManager.
-        if (mBluetoothManager == null) {
-            mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-            if (mBluetoothManager == null) {
-                Log.e(TAG, "Unable to initialize BluetoothManager.");
-                return false;
-            }
-        }
-
-        mBluetoothAdapter = mBluetoothManager.getAdapter();
-        if (mBluetoothAdapter == null) {
-            Log.e(TAG, "Unable to obtain a BluetoothAdapter.");
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Connects to the GATT server hosted on the Bluetooth LE device.
      *
      * @param address
@@ -262,7 +312,7 @@ public class BluetoothLeService extends Service {
      *         {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
      *         callback.
      */
-    public boolean connect(final String address) {
+    public boolean connect(String address) {
         if (mBluetoothAdapter == null || address == null) {
             Log.w(TAG,
                     "BluetoothAdapter not initialized or unspecified address.");
@@ -355,6 +405,30 @@ public class BluetoothLeService extends Service {
         } catch (Exception e) {
             Log.d(TAG,
                     "Exception while setting up notification for heartrate.", e);
+        }
+    }
+
+    public void appendLog(String text) {
+        File logFile = new File(Environment.getExternalStorageDirectory()
+                .getPath() + "/hrmlog.csv");
+        if (!logFile.exists()) {
+            try {
+                logFile.createNewFile();
+            } catch (IOException e) {
+                Log.e(TAG, "Error while creating file. ", e);
+                e.printStackTrace();
+            }
+        }
+        try {
+            // BufferedWriter for performance, true to set append to file flag
+            BufferedWriter buf = new BufferedWriter(new FileWriter(logFile,
+                    true));
+            buf.append(text);
+            buf.newLine();
+            buf.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
