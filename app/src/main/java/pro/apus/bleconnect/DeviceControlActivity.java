@@ -288,6 +288,7 @@ public class DeviceControlActivity extends Activity {
 
 	@Override
     protected void onResume() {
+        Log.i(TAG, "onResume");
         super.onResume();
         currentlyVisible = true;
 
@@ -314,17 +315,19 @@ public class DeviceControlActivity extends Activity {
 
 	@Override
     protected void onPause() {
+        Log.i(TAG, "onPause");
         super.onPause();
         currentlyVisible = false;
-        // unregisterReceiver(mGattUpdateReceiver);
     }
 
 	@Override
     protected void onDestroy() {
+        Log.i(TAG, "Destroy");
         super.onDestroy();
         currentlyVisible = false;
+        unregisterReceiver(mGattUpdateReceiver);
         unbindService(mServiceConnection);
-        // mBluetoothLeService = null;
+        mBluetoothLeService = null;
     }
 
 	@Override
@@ -515,8 +518,8 @@ public class DeviceControlActivity extends Activity {
 		mButtonStop.setVisibility(View.VISIBLE);
 		mButtonStart.setVisibility(View.GONE);
 		mBluetoothLeService.setCharacteristicNotification(
-				mNotifyCharacteristic, true);
-		invalidateOptionsMenu();
+                mNotifyCharacteristic, true);
+        invalidateOptionsMenu();
 		logging = true;
 	}
 
@@ -524,8 +527,8 @@ public class DeviceControlActivity extends Activity {
 		mButtonStop.setVisibility(View.GONE);
 		mButtonStart.setVisibility(View.VISIBLE);
 		mBluetoothLeService.setCharacteristicNotification(
-				mNotifyCharacteristic, false);
-		invalidateOptionsMenu();
+                mNotifyCharacteristic, false);
+        invalidateOptionsMenu();
 		logging = false;
 	}
 }

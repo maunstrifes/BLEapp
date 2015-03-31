@@ -21,8 +21,10 @@
 package pro.apus.bleconnect;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.TaskStackBuilder;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -114,15 +116,48 @@ public class BluetoothLeService extends Service {
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
 
+    private int mId = 1;
+    private boolean started;
+    private boolean initialized;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Notification notification = new Notification(R.drawable.ic_launcher, "BLE Logger",
-                System.currentTimeMillis());
-        Intent notificationIntent = new Intent(this, BluetoothLeService.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-        notification.setLatestEventInfo(this, "BLE", "BLE Logger", pendingIntent);
-        this.startForeground(1, notification);
+        if (started) {
+            return Service.START_NOT_STICKY;
+        }
+        started = true;
+
+//        Notification notification = new Notification(R.drawable.ic_launcher, "BLE Logger",
+//                System.currentTimeMillis());
+//        Intent notificationIntent = new Intent(this, BluetoothLeService.class);
+//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+//        notification.setLatestEventInfo(this, "BLE", "BLE Logger", pendingIntent);
+
+        Notification.Builder builder =
+                new Notification.Builder(this)
+                        .setSmallIcon(R.drawable.ic_launcher)
+                        .setContentTitle("BLE Logger")
+                        .setContentText("testtext");
+        builder.setOngoing(true);
+        Intent resultIntent = new Intent(getApplicationContext(), DeviceControlActivity.class);
+        resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        // Adds the back stack for the Intent (but not the Intent itself)
+        stackBuilder.addParentStack(DeviceControlActivity.class);
+        // Adds the Intent that starts the Activity to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        builder.setContentIntent(resultPendingIntent);
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // mId allows you to update the notification later on.
+        mNotificationManager.notify(mId, builder.build());
 
         return Service.START_NOT_STICKY;
     }
@@ -190,6 +225,12 @@ public class BluetoothLeService extends Service {
      * @return Return true if the initialization is successful.
      */
     public boolean initialize() {
+
+        if (initialized) {
+            return true;
+        }
+        initialized = true;
+
         // For API level 18 and above, get a reference to BluetoothAdapter
         // through
         // BluetoothManager.
