@@ -34,18 +34,14 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Binder;
-import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,13 +53,29 @@ import pro.apus.heartrate.R;
  */
 public class BluetoothLeService extends Service {
 
-    public final static UUID UUID_HEART_RATE_MEASUREMENT = UUID
-            .fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
     private final static String TAG = BluetoothLeService.class.getSimpleName();
-
+    public static UUID UUID_HEART_RATE_MEASUREMENT = UUID
+            .fromString("00002a37-0000-1000-8000-00805f9b34fb");
+    public static UUID UUID_CLIENT_CHARACTERISTIC_CONFIG = UUID
+            .fromString("00002902-0000-1000-8000-00805f9b34fb");
     private final BluetoothGattCallback gattCallback = new MyBluetoothGattCallback();
     private final IBinder binder = new LocalBinder();
 
+    private RecordService recordService;
+    private final ServiceConnection recordServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName,
+                                       IBinder service) {
+            recordService = ((RecordService.LocalBinder) service)
+                    .getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            recordService = null;
+        }
+    };
     private BluetoothAdapter bluetoothAdapter;
     private String bluetoothDeviceAddress;
     private BluetoothGatt bluetoothGatt;
@@ -82,9 +94,12 @@ public class BluetoothLeService extends Service {
         startBluetooth();
         String deviceAddress = intent.getStringExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS);
         connect(deviceAddress);
+
         showNotification();
 
-        return Service.START_NOT_STICKY;
+        Intent recordServiceIntent = new Intent(this, RecordService.class);
+        bindService(recordServiceIntent, recordServiceConnection, BIND_AUTO_CREATE);
+        return Service.START_STICKY;
     }
 
     /**
@@ -113,7 +128,7 @@ public class BluetoothLeService extends Service {
             for (BluetoothGattCharacteristic gattCharacteristic : gattService
                     .getCharacteristics()) {
 
-                if (UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT)
+                if (UUID_HEART_RATE_MEASUREMENT
                         .equals(gattCharacteristic.getUuid())) {
                     Log.d(TAG, "Found heart rate");
                     setCharacteristicNotification(gattCharacteristic, true);
@@ -121,6 +136,7 @@ public class BluetoothLeService extends Service {
                 }
             }
         }
+        //TODO: Was tun, wenn GattService nicht verfügbar? (Testen ob man da reinkommt, wenn man zu random Bluetooth Gerät verbinden will, zB Handy)
         Log.w(TAG, "No heart rate characteristic found!");
     }
 
@@ -177,8 +193,6 @@ public class BluetoothLeService extends Service {
             }
             final int heartRate = characteristic.getIntValue(format, 1);
             Log.d(TAG, String.format("Received heart rate: %d", heartRate));
-            // write HeartRate
-            appendLog((new Date()).toString() + "," + heartRate);
             intent.putExtra(BleAction.EXTRA_DATA.toString(), String.valueOf(heartRate));
         } else {
             // For all other profiles, writes the data formatted in HEX.
@@ -260,6 +274,7 @@ public class BluetoothLeService extends Service {
         if (bluetoothGatt == null) {
             return;
         }
+        unbindService(recordServiceConnection);
         bluetoothGatt.close();
         bluetoothGatt = null;
         NotificationManager mNotificationManager =
@@ -281,8 +296,7 @@ public class BluetoothLeService extends Service {
         // Specific to Heart Rate Measurement.
         if (UUID_HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
             BluetoothGattDescriptor descriptor = characteristic
-                    .getDescriptor(UUID
-                            .fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+                    .getDescriptor(UUID_CLIENT_CHARACTERISTIC_CONFIG);
             descriptor
                     .setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             bluetoothGatt.writeDescriptor(descriptor);
@@ -290,29 +304,6 @@ public class BluetoothLeService extends Service {
         }
     }
 
-    public void appendLog(String text) {
-        File logFile = new File(Environment.getExternalStorageDirectory()
-                .getPath() + "/hrmlog.csv");
-        if (!logFile.exists()) {
-            try {
-                logFile.createNewFile();
-            } catch (IOException e) {
-                Log.e(TAG, "Error while creating file. ", e);
-                e.printStackTrace();
-            }
-        }
-        try {
-            // BufferedWriter for performance, true to set append to file flag
-            BufferedWriter buf = new BufferedWriter(new FileWriter(logFile,
-                    true));
-            buf.append(text);
-            buf.newLine();
-            buf.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Callback for GATT events

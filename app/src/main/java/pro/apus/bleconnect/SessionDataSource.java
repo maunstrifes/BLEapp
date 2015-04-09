@@ -16,17 +16,15 @@ import android.database.sqlite.SQLiteDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EventsDataSource {
+public class SessionDataSource {
 
     // Database fields
     private SQLiteDatabase database;
     private BLESQLLiteHelper dbHelper;
     private String[] allColumns = {BLESQLLiteHelper.COLUMN_ID,
-            BLESQLLiteHelper.COLUMN_SESSION,
-            BLESQLLiteHelper.COLUMN_TIME,
-            BLESQLLiteHelper.COLUMN_EVENTDATA};
+            BLESQLLiteHelper.COLUMN_TIME};
 
-    public EventsDataSource(Context context) {
+    public SessionDataSource(Context context) {
         dbHelper = new BLESQLLiteHelper(context);
     }
 
@@ -38,54 +36,50 @@ public class EventsDataSource {
         dbHelper.close();
     }
 
-    public Event createEvent(int session, long time, int eventData) {
+    public Session createSession(long time) {
 
         ContentValues values = new ContentValues();
-        values.put(BLESQLLiteHelper.COLUMN_SESSION, session);
         values.put(BLESQLLiteHelper.COLUMN_TIME, time);
-        values.put(BLESQLLiteHelper.COLUMN_EVENTDATA, eventData);
 
-        long insertId = database.insert(BLESQLLiteHelper.TABLE_HRLOG, null,
+        long insertId = database.insert(BLESQLLiteHelper.TABLE_SESSION, null,
                 values);
-        Cursor cursor = database.query(BLESQLLiteHelper.TABLE_HRLOG,
+        Cursor cursor = database.query(BLESQLLiteHelper.TABLE_SESSION,
                 allColumns, BLESQLLiteHelper.COLUMN_ID + " = " + insertId, null,
                 null, null, null);
         cursor.moveToFirst();
-        Event newEvent = cursorToEvent(cursor);
+        Session newSession = cursorToEvent(cursor);
         cursor.close();
-        return newEvent;
+        return newSession;
     }
 
-    public void deleteEvent(Event event) {
-        long id = event.getId();
+    public void deleteEvent(Session session) {
+        long id = session.getId();
         System.out.println("Comment deleted with id: " + id);
-        database.delete(BLESQLLiteHelper.TABLE_HRLOG, BLESQLLiteHelper.COLUMN_ID
+        database.delete(BLESQLLiteHelper.TABLE_SESSION, BLESQLLiteHelper.COLUMN_ID
                 + " = " + id, null);
     }
 
-    public List<Event> getAllComments() {
-        List<Event> events = new ArrayList<Event>();
+    public List<Session> getAllSessions() {
+        List<Session> sessions = new ArrayList<Session>();
 
-        Cursor cursor = database.query(BLESQLLiteHelper.TABLE_HRLOG,
+        Cursor cursor = database.query(BLESQLLiteHelper.TABLE_SESSION,
                 allColumns, null, null, null, null, null);
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
-            Event event = cursorToEvent(cursor);
-            events.add(event);
+            Session session = cursorToEvent(cursor);
+            sessions.add(session);
             cursor.moveToNext();
         }
         // make sure to close the cursor
         cursor.close();
-        return events;
+        return sessions;
     }
 
-    private Event cursorToEvent(Cursor cursor) {
-        Event event = new Event();
-        event.setId(cursor.getLong(0));
-        event.setSession(cursor.getInt(1));
-        event.setTime(cursor.getLong(2));
-        event.setEventdata(cursor.getInt(3));
-        return event;
+    private Session cursorToEvent(Cursor cursor) {
+        Session session = new Session();
+        session.setId(cursor.getLong(0));
+        session.setTime(cursor.getLong(1));
+        return session;
     }
 } 

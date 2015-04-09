@@ -60,8 +60,8 @@ import pro.apus.heartrate.R;
  * turn interacts with the Bluetooth LE API.
  */
 public class DeviceControlActivity extends Activity {
-	// BLE stuff
-	public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
+    // BLE stuff
+    public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private final static String TAG = DeviceControlActivity.class
             .getSimpleName();
@@ -113,19 +113,16 @@ public class DeviceControlActivity extends Activity {
         }
     };
 
-    // Database
-    private EventsDataSource datasource;
-    private boolean logging = false;
-	private TextView mDataField;
-	private String mDeviceName;
-	private String mDeviceAddress;
+    private TextView mDataField;
+    private String mDeviceName;
+    private String mDeviceAddress;
 
-	// Chart stuff
-	private GraphicalView mChart;
-	private XYMultipleSeriesDataset mDataset = new XYMultipleSeriesDataset();
-	private XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer();
-	private XYSeries mCurrentSeries;
-	private XYSeriesRenderer mCurrentRenderer;
+    // Chart stuff
+    private GraphicalView mChart;
+    private XYMultipleSeriesDataset mDataset = new XYMultipleSeriesDataset();
+    private XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer();
+    private XYSeries mCurrentSeries;
+    private XYSeriesRenderer mCurrentRenderer;
 
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
@@ -198,12 +195,12 @@ public class DeviceControlActivity extends Activity {
         }
     }
 
-	private void clearUI() {
+    private void clearUI() {
         // mGattServicesList.setAdapter((SimpleExpandableListAdapter) null);
         mDataField.setText(R.string.no_data);
     }
 
-	@Override
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -216,10 +213,6 @@ public class DeviceControlActivity extends Activity {
         final Intent intent = getIntent();
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
-
-        // Set up database connection
-        datasource = new EventsDataSource(this);
-        datasource.open();
 
         mDataField = (TextView) findViewById(R.id.data_value);
 
@@ -242,7 +235,7 @@ public class DeviceControlActivity extends Activity {
 
     }
 
-	@Override
+    @Override
     protected void onResume() {
         Log.i(TAG, "onResume");
         super.onResume();
@@ -269,14 +262,14 @@ public class DeviceControlActivity extends Activity {
         }
     }
 
-	@Override
+    @Override
     protected void onPause() {
         Log.i(TAG, "onPause");
         super.onPause();
         currentlyVisible = false;
     }
 
-	@Override
+    @Override
     protected void onDestroy() {
         Log.i(TAG, "Destroy");
         super.onDestroy();
@@ -286,7 +279,7 @@ public class DeviceControlActivity extends Activity {
 //        mBluetoothLeService = null;
     }
 
-	@Override
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.gatt_services, menu);
         return true;
@@ -297,6 +290,7 @@ public class DeviceControlActivity extends Activity {
         switch (item.getItemId()) {
             case R.id.menu_stop_session:
                 mBluetoothLeService.disconnect();
+                mBluetoothLeService.close();
                 //TODO: weiter zu nächster Activity
                 return true;
             case android.R.id.home:
@@ -306,14 +300,13 @@ public class DeviceControlActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-	private void displayData(String data) {
+    private void displayData(String data) {
         try {
             if (data != null) {
 
                 long time = (new Date()).getTime();
                 int dataElement = Integer.parseInt(data);
                 mCurrentSeries.add(time, dataElement);
-                //datasource.createEvent(1, time, dataElement);
                 // Storing last 600 only - should average...
                 while (mCurrentSeries.getItemCount() > 60 * 10) {
                     mCurrentSeries.remove(0);
@@ -343,5 +336,5 @@ public class DeviceControlActivity extends Activity {
         } catch (Exception e) {
             Log.e(TAG, "Exception while parsing: " + data);
         }
-	}
+    }
 }
