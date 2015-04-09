@@ -32,20 +32,6 @@
             android:gravity="center"
             android:text="@string/no_data"
             android:textSize="30sp" />
-
-        <ImageButton
-            android:id="@+id/btnStart"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/menu_start_logging"
-            android:src="@android:drawable/ic_media_play" />
-
-        <ImageButton
-            android:id="@+id/btnStop"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/menu_stop"
-            android:src="@android:drawable/ic_media_pause" />
     </LinearLayout>
 
     <LinearLayout

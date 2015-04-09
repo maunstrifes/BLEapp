@@ -22,18 +22,19 @@ package pro.apus.bleconnect;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Paint.Align;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -66,9 +67,6 @@ public class DeviceControlActivity extends Activity {
             .getSimpleName();
     // Various UI stuff
     public static boolean currentlyVisible;
-
-    private BluetoothLeService mBluetoothLeService;
-    private boolean mConnected = false;
     // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
     // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
@@ -81,13 +79,9 @@ public class DeviceControlActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             final BleAction action = BleAction.valueOf(intent.getAction());
             if (BleAction.ACTION_GATT_CONNECTED.equals(action)) {
-                mConnected = true;
-                updateConnectionState(true);
                 invalidateOptionsMenu();
             } else if (BleAction.ACTION_GATT_DISCONNECTED
                     .equals(action)) {
-                mConnected = false;
-                updateConnectionState(false);
                 invalidateOptionsMenu();
                 clearUI();
             } else if (BleAction.ACTION_GATT_SERVICES_DISCOVERED
@@ -103,6 +97,21 @@ public class DeviceControlActivity extends Activity {
             }
         }
     };
+    private BluetoothLeService mBluetoothLeService;
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName,
+                                       IBinder service) {
+            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service)
+                    .getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBluetoothLeService = null;
+        }
+    };
 
     // Database
     private EventsDataSource datasource;
@@ -111,8 +120,6 @@ public class DeviceControlActivity extends Activity {
 	private String mDeviceName;
 	private String mDeviceAddress;
 
-    private ImageButton mButtonStart;
-	private ImageButton mButtonStop;
 	// Chart stuff
 	private GraphicalView mChart;
 	private XYMultipleSeriesDataset mDataset = new XYMultipleSeriesDataset();
@@ -216,25 +223,12 @@ public class DeviceControlActivity extends Activity {
 
         mDataField = (TextView) findViewById(R.id.data_value);
 
-        mButtonStart = (ImageButton) findViewById(R.id.btnStart);
-        mButtonStart.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                startLogging();
-            }
-        });
-
-        mButtonStop = (ImageButton) findViewById(R.id.btnStop);
-        mButtonStop.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                stopLogging();
-            }
-        });
-
         getActionBar().setTitle(mDeviceName);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         gattServiceIntent.putExtra(EXTRAS_DEVICE_ADDRESS, mDeviceAddress);
-        this.startService(gattServiceIntent);
+        startService(gattServiceIntent);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
         LinearLayout layout = (LinearLayout) findViewById(R.id.chart);
         if (mChart == null) {
@@ -255,11 +249,11 @@ public class DeviceControlActivity extends Activity {
         currentlyVisible = true;
 
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        if (mBluetoothLeService != null) {
-            final boolean result = mBluetoothLeService.connect(mDeviceAddress);
-            Log.d(TAG, "Connect request result=" + result);
-        }
-	}
+//        if (mBluetoothLeService != null) {
+//            final boolean result = mBluetoothLeService.connect(mDeviceAddress);
+//            Log.d(TAG, "Connect request result=" + result);
+//        }
+    }
 
     // this is called when the screen rotates.
     // (onCreate is no longer called when screen rotates due to manifest, see:
@@ -288,74 +282,28 @@ public class DeviceControlActivity extends Activity {
         super.onDestroy();
         currentlyVisible = false;
         unregisterReceiver(mGattUpdateReceiver);
-//        unbindService(mServiceConnection);
+        unbindService(mServiceConnection);
 //        mBluetoothLeService = null;
     }
 
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.gatt_services, menu);
-        if (mConnected) {
-            menu.findItem(R.id.menu_connect).setVisible(false);
-            menu.findItem(R.id.menu_disconnect).setVisible(true);
-            if (logging) {
-                menu.findItem(R.id.menu_start_logging).setVisible(false);
-                menu.findItem(R.id.menu_stop_logging).setVisible(true);
-                mButtonStart.setVisibility(View.GONE);
-                mButtonStop.setVisibility(View.VISIBLE);
-            } else {
-                menu.findItem(R.id.menu_start_logging).setVisible(true);
-                menu.findItem(R.id.menu_stop_logging).setVisible(false);
-                mButtonStart.setVisibility(View.VISIBLE);
-                mButtonStop.setVisibility(View.GONE);
-            }
-        } else {
-            menu.findItem(R.id.menu_connect).setVisible(true);
-            menu.findItem(R.id.menu_disconnect).setVisible(false);
-            menu.findItem(R.id.menu_start_logging).setVisible(false);
-            menu.findItem(R.id.menu_stop_logging).setVisible(false);
-            mButtonStart.setVisibility(View.GONE);
-            mButtonStop.setVisibility(View.GONE);
-        }
-
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_connect:
-                mBluetoothLeService.connect(mDeviceAddress);
-                return true;
-            case R.id.menu_disconnect:
+            case R.id.menu_stop_session:
                 mBluetoothLeService.disconnect();
-                return true;
-            case R.id.menu_start_logging:
-                startLogging();
-                return true;
-            case R.id.menu_stop_logging:
-                stopLogging();
+                //TODO: weiter zu nächster Activity
                 return true;
             case android.R.id.home:
                 onBackPressed();
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-	private void updateConnectionState(final boolean connected) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (connected) {
-                    mButtonStart.setVisibility(View.VISIBLE);
-                    mButtonStop.setVisibility(View.GONE);
-                } else {
-                    mButtonStart.setVisibility(View.GONE);
-                    mButtonStop.setVisibility(View.GONE);
-                }
-			}
-        });
     }
 
 	private void displayData(String data) {
@@ -395,24 +343,5 @@ public class DeviceControlActivity extends Activity {
         } catch (Exception e) {
             Log.e(TAG, "Exception while parsing: " + data);
         }
-	}
-
-
-	private void startLogging() {
-		mButtonStop.setVisibility(View.VISIBLE);
-		mButtonStart.setVisibility(View.GONE);
-//		mBluetoothLeService.setCharacteristicNotification(
-//                mNotifyCharacteristic, true);
-        invalidateOptionsMenu();
-		logging = true;
-	}
-
-	private void stopLogging() {
-		mButtonStop.setVisibility(View.GONE);
-		mButtonStart.setVisibility(View.VISIBLE);
-//		mBluetoothLeService.setCharacteristicNotification(
-//                mNotifyCharacteristic, false);
-        invalidateOptionsMenu();
-		logging = false;
 	}
 }
