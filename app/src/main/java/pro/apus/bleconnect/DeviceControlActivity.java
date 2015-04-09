@@ -290,7 +290,6 @@ public class DeviceControlActivity extends Activity {
         switch (item.getItemId()) {
             case R.id.menu_stop_session:
                 mBluetoothLeService.disconnect();
-                mBluetoothLeService.close();
                 //TODO: weiter zu nächster Activity
                 return true;
             case android.R.id.home:

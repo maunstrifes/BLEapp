@@ -51,6 +51,8 @@ public class RecordService extends Service {
 
     @Override
     public void onDestroy() {
+
+        unregisterReceiver(broadcastReceiver);
         try {
             writer.flush();
             writer.close();

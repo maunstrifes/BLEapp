@@ -21,7 +21,6 @@
 package pro.apus.bleconnect;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.TaskStackBuilder;
@@ -267,19 +266,17 @@ public class BluetoothLeService extends Service {
     }
 
     /**
-     * After using a given BLE device, the app must call this method to ensure
-     * resources are released properly.
+     * Stops the service and releases the bluetooth connections
      */
     public void close() {
         if (bluetoothGatt == null) {
             return;
         }
+        stopForeground(true);
         unbindService(recordServiceConnection);
         bluetoothGatt.close();
         bluetoothGatt = null;
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.cancel(notificationId);
+        stopSelf();
     }
 
     /**
@@ -325,6 +322,7 @@ public class BluetoothLeService extends Service {
                 intentAction = BleAction.ACTION_GATT_DISCONNECTED;
                 Log.i(TAG, "Disconnected from GATT server.");
                 broadcastUpdate(intentAction.toString());
+                close(); //TODO: oder doch nur wenn ausdrücklich gewünscht und nicht passiert? (HR Brustgurt Verhalten??)
             }
         }
 
