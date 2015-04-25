@@ -1,4 +1,4 @@
-package pro.apus.bleconnect;
+package ac.at.tuwien.inso.ble.activities;
 
 import android.app.ListActivity;
 import android.os.Bundle;
@@ -10,6 +10,9 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import ac.at.tuwien.inso.ble.adapter.SessionAdapter;
+import ac.at.tuwien.inso.ble.database.Session;
+import ac.at.tuwien.inso.ble.database.SessionDataSource;
 import pro.apus.heartrate.R;
 
 public class AllSessionsActivity extends ListActivity {

@@ -18,7 +18,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pro.apus.bleconnect;
+package ac.at.tuwien.inso.ble.services;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -44,6 +44,8 @@ import android.util.Log;
 import java.util.List;
 import java.util.UUID;
 
+import ac.at.tuwien.inso.ble.activities.DeviceControlActivity;
+import ac.at.tuwien.inso.ble.utils.BleAction;
 import pro.apus.heartrate.R;
 
 /**
@@ -353,7 +355,7 @@ public class BluetoothLeService extends Service {
     ;
 
     public class LocalBinder extends Binder {
-        BluetoothLeService getService() {
+        public BluetoothLeService getService() {
             return BluetoothLeService.this;
         }
     }

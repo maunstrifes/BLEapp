@@ -1,4 +1,4 @@
-package pro.apus.bleconnect;
+package ac.at.tuwien.inso.ble.database;
 
 public class Session {
 
@@ -13,9 +13,11 @@ public class Session {
         this.id = id;
     }
 
+    public long getTime() {
+        return time;
+    }
+
     public void setTime(long time) {
         this.time = time;
     }
-
-    public long getTime() { return time; }
 }

@@ -1,3 +1,5 @@
+package ac.at.tuwien.inso.ble.utils;
+
 import java.util.LinkedList;
 
 /**
@@ -6,7 +8,7 @@ import java.util.LinkedList;
  *
  * @author Manuel Heinzl
  */
-public class LimitedList<E> extends LinkedList<E>{
+public class LimitedList<E> extends LinkedList<E> {
 
     private int limit;
 
@@ -17,7 +19,9 @@ public class LimitedList<E> extends LinkedList<E>{
     @Override
     public boolean add(E o) {
         super.add(o);
-        while (size() > limit) { super.remove(); }
+        while (size() > limit) {
+            super.remove();
+        }
         return true;
     }
 }

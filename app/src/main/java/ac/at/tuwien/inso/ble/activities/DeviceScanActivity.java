@@ -18,7 +18,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pro.apus.bleconnect;
+package ac.at.tuwien.inso.ble.activities;
 
 import android.app.Activity;
 import android.app.ListActivity;

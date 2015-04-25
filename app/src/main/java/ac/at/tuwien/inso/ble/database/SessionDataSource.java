@@ -5,7 +5,7 @@
  * 
  */
 
-package pro.apus.bleconnect;
+package ac.at.tuwien.inso.ble.database;
 
 import android.content.ContentValues;
 import android.content.Context;

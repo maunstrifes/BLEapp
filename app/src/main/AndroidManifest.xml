@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
 Copyright (C) 2013 The Android Open Source Project
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +16,7 @@ limitations under the License.
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="pro.apus.heartrate"
     android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionName="1.0">
 
     <uses-sdk
         android:minSdkVersion="18"
@@ -46,11 +45,11 @@ limitations under the License.
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.Holo" >
+        android:theme="@android:style/Theme.Holo">
         <activity
-            android:name="pro.apus.bleconnect.MainActivity"
+            android:name="ac.at.tuwien.inso.ble.activities.MainActivity"
             android:label="@string/app_name"
-            android:launchMode="singleTask" >
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -58,29 +57,29 @@ limitations under the License.
             </intent-filter>
         </activity>
         <activity
-            android:name="pro.apus.bleconnect.DeviceScanActivity"
+            android:name="ac.at.tuwien.inso.ble.activities.DeviceScanActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask" />
         <activity
-            android:name="pro.apus.bleconnect.DeviceControlActivity"
+            android:name="ac.at.tuwien.inso.ble.activities.DeviceControlActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:launchMode="singleTask" />
 
         <service
-            android:name="pro.apus.bleconnect.BluetoothLeService"
+            android:name="ac.at.tuwien.inso.ble.services.BluetoothLeService"
             android:enabled="true" />
         <service
-            android:name="pro.apus.bleconnect.RecordService"
+            android:name="ac.at.tuwien.inso.ble.services.RecordService"
             android:enabled="true"
             android:exported="true" />
 
         <activity
-            android:name="pro.apus.bleconnect.AllSessionsActivity"
+            android:name="ac.at.tuwien.inso.ble.activities.AllSessionsActivity"
             android:label="@string/title_activity_all_sessions"
-            android:parentActivityName="pro.apus.bleconnect.MainActivity" >
+            android:parentActivityName="ac.at.tuwien.inso.ble.activities.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="pro.apus.bleconnect.MainActivity" />
+                android:value="ac.at.tuwien.inso.ble.activities.MainActivity" />
         </activity>
     </application>
 

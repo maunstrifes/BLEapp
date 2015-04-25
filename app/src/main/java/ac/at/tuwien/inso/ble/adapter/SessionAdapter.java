@@ -1,4 +1,4 @@
-package pro.apus.bleconnect;
+package ac.at.tuwien.inso.ble.adapter;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
@@ -11,16 +11,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import ac.at.tuwien.inso.ble.database.Session;
 import pro.apus.heartrate.R;
 
 public class SessionAdapter extends ArrayAdapter<Session> {
     private final Activity context;
     private final List<Session> sessions;
-
-    static class ViewHolder {
-        public TextView firstline;
-        public TextView secondline;
-    }
 
     public SessionAdapter(Activity context, List<Session> sessions) {
         super(context, R.layout.session_list_view, sessions);
@@ -46,6 +42,11 @@ public class SessionAdapter extends ArrayAdapter<Session> {
         holder.firstline.setText("Session " + s.getId());
         holder.secondline.setText(SimpleDateFormat.getDateTimeInstance().format(new Date(s.getTime())));
         return rowView;
+    }
+
+    static class ViewHolder {
+        public TextView firstline;
+        public TextView secondline;
     }
 }
 

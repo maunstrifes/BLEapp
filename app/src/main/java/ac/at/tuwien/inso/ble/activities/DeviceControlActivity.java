@@ -18,7 +18,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pro.apus.bleconnect;
+package ac.at.tuwien.inso.ble.activities;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -48,6 +48,8 @@ import org.achartengine.renderer.XYSeriesRenderer;
 
 import java.util.Date;
 
+import ac.at.tuwien.inso.ble.services.BluetoothLeService;
+import ac.at.tuwien.inso.ble.utils.BleAction;
 import pro.apus.heartrate.R;
 
 //import android.widget.ExpandableListView;

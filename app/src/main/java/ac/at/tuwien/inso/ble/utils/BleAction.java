@@ -1,4 +1,4 @@
-package pro.apus.bleconnect;
+package ac.at.tuwien.inso.ble.utils;
 
 /**
  * Created by manu on 03.04.2015.

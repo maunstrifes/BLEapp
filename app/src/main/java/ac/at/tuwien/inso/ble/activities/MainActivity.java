@@ -1,4 +1,4 @@
-package pro.apus.bleconnect;
+package ac.at.tuwien.inso.ble.activities;
 
 import android.app.Activity;
 import android.content.Intent;

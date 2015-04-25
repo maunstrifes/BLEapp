@@ -1,4 +1,4 @@
-package pro.apus.bleconnect;
+package ac.at.tuwien.inso.ble.services;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -15,6 +15,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
+
+import ac.at.tuwien.inso.ble.database.Session;
+import ac.at.tuwien.inso.ble.database.SessionDataSource;
+import ac.at.tuwien.inso.ble.utils.BleAction;
 
 public class RecordService extends Service {
 
