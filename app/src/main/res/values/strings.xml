@@ -36,5 +36,10 @@
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
     <string name="menu_stop_session">Stop Session</string>
+    <string name="all_sessions">All Sessions</string>
+    <string name="title_activity_all_sessions">AllSessionsActivity</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
 
 </resources>

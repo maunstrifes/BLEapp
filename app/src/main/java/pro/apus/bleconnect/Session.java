@@ -16,4 +16,6 @@ public class Session {
     public void setTime(long time) {
         this.time = time;
     }
+
+    public long getTime() { return time; }
 }

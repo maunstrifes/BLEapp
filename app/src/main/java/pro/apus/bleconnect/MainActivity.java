@@ -13,6 +13,7 @@ import pro.apus.heartrate.R;
 public class MainActivity extends Activity implements View.OnClickListener {
 
     private Button btnSessionStart;
+    private Button btnAllSessions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +22,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         btnSessionStart = (Button) findViewById(R.id.session_start);
         btnSessionStart.setOnClickListener(this);
+        btnAllSessions = (Button) findViewById(R.id.all_sessions);
+        btnAllSessions.setOnClickListener(this);
     }
 
 
@@ -45,7 +48,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View view) {
 
-        Intent intent = new Intent(this, DeviceScanActivity.class);
-        startActivity(intent);
+        if(view.equals(btnSessionStart)) {
+            Intent intent = new Intent(this, DeviceScanActivity.class);
+            startActivity(intent);
+        }
+        if(view.equals(btnAllSessions)){
+            Intent intent = new Intent(this, AllSessionsActivity.class);
+            startActivity(intent);
+        }
     }
 }

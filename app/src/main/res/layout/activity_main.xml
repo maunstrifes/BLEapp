@@ -22,5 +22,12 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="@string/session_start" />
+
+        <Button
+            android:id="@+id/all_sessions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/all_sessions" />
     </LinearLayout>
 </RelativeLayout>
