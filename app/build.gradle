@@ -29,9 +29,5 @@ android {
 dependencies {
     compile files('libs/achartengine-1.1.0.jar')
     compile files('libs/commons-logging-1.1.1.jar')
-    compile files('libs/dropbox-android-sdk-1.5.4.jar')
-    compile files('libs/httpclient-4.0.3.jar')
-    compile files('libs/httpcore-4.0.1.jar')
-    compile files('libs/httpmime-4.0.3.jar')
-    compile files('libs/json_simple-1.1.jar')
+    compile "com.androidplot:androidplot-core:0.6.1"
 }

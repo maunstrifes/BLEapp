@@ -52,9 +52,8 @@ public class SessionDataSource {
         return newSession;
     }
 
-    public void deleteEvent(Session session) {
+    public void deleteSession(Session session) {
         long id = session.getId();
-        System.out.println("Comment deleted with id: " + id);
         database.delete(BLESQLLiteHelper.TABLE_SESSION, BLESQLLiteHelper.COLUMN_ID
                 + " = " + id, null);
     }

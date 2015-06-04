@@ -81,6 +81,14 @@ limitations under the License.
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ac.at.tuwien.inso.ble.activities.MainActivity" />
         </activity>
+        <activity
+            android:name="ac.at.tuwien.inso.ble.activities.ShowSessionActivity"
+            android:label="@string/title_activity_show_session"
+            android:parentActivityName="ac.at.tuwien.inso.ble.activities.AllSessionsActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ac.at.tuwien.inso.ble.activities.AllSessionsActivity" />
+        </activity>
     </application>
 
 </manifest>

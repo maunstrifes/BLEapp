@@ -1,40 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <items version="2">
 
-    <item jar="D:\Android\workspace\BLEapp\app\libs\dropbox-android-sdk-1.5.4.jar" jumboMode="false"
-        revision="21.1.2" sha1="2e7a56b4f6e226c233195ba0c9417a9b28183ce5">
+    <item
+        jar="C:\Users\manu\.gradle\caches\modules-2\files-2.1\com.androidplot\androidplot-core\0.6.1\3db0daea52375b26bfa61c59b8df93950bdefbbc\androidplot-core-0.6.1.jar"
+        jumboMode="false" revision="21.1.2" sha1="3db0daea52375b26bfa61c59b8df93950bdefbbc">
         <dex
-            dex="D:\Android\workspace\BLEapp\app\build\intermediates\pre-dexed\debug\dropbox-android-sdk-1.5.4-3d1e0c37de445bbbd35598b408bad3c47cc7b4a5.jar" />
-    </item>
-    <item jar="D:\Android\workspace\BLEapp\app\libs\httpmime-4.0.3.jar" jumboMode="false"
-        revision="21.1.2" sha1="dd1973851926925e02d0bbdf4ec0f7435d8292ce">
-        <dex
-            dex="D:\Android\workspace\BLEapp\app\build\intermediates\pre-dexed\debug\httpmime-4.0.3-530eaa5efbd5375ad9dd9539ee0831f6c16640e9.jar" />
-    </item>
-    <item jar="D:\Android\workspace\BLEapp\app\libs\json_simple-1.1.jar" jumboMode="false"
-        revision="21.1.2" sha1="5e303a03d04e6788dddfa3655272580ae0fc13bb">
-        <dex
-            dex="D:\Android\workspace\BLEapp\app\build\intermediates\pre-dexed\debug\json_simple-1.1-2126ab63c699d6af9b00c15d13c2f812bc0990a5.jar" />
-    </item>
-    <item jar="D:\Android\workspace\BLEapp\app\libs\achartengine-1.1.0.jar" jumboMode="false"
-        revision="21.1.2" sha1="9932e3fb9fbe54e80873e77f72a99f79e33b3250">
-        <dex
-            dex="D:\Android\workspace\BLEapp\app\build\intermediates\pre-dexed\debug\achartengine-1.1.0-0293e459d10394d8ad2aa6f1535eca7441c422c5.jar" />
-    </item>
-    <item jar="D:\Android\workspace\BLEapp\app\libs\commons-logging-1.1.1.jar" jumboMode="false"
-        revision="21.1.2" sha1="2d859791fbf7d880591864bd4004d8442a8a3b81">
-        <dex
-            dex="D:\Android\workspace\BLEapp\app\build\intermediates\pre-dexed\debug\commons-logging-1.1.1-f495587d03260b2a62d08e719c55e57ff03c7fc1.jar" />
-    </item>
-    <item jar="D:\Android\workspace\BLEapp\app\libs\httpclient-4.0.3.jar" jumboMode="false"
-        revision="21.1.2" sha1="eebf00fc3417031e9fa34afd85ccf11365ca2304">
-        <dex
-            dex="D:\Android\workspace\BLEapp\app\build\intermediates\pre-dexed\debug\httpclient-4.0.3-a3d0972c8ba0e6b1a43dfb7e5466b003e67d97fb.jar" />
-    </item>
-    <item jar="D:\Android\workspace\BLEapp\app\libs\httpcore-4.0.1.jar" jumboMode="false"
-        revision="21.1.2" sha1="2cef8e735e306f6be94b609be815854f9cf36eb6">
-        <dex
-            dex="D:\Android\workspace\BLEapp\app\build\intermediates\pre-dexed\debug\httpcore-4.0.1-051cd9b7960485fbeed6e3c497cc1e8c5011deef.jar" />
+            dex="D:\android\hrvapp2\app\build\intermediates\pre-dexed\debug\androidplot-core-0.6.1-a827a8a63606609c7f85b8959f22a8c2d7ba4a83.jar" />
     </item>
 
 </items>

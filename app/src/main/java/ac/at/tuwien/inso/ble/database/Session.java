@@ -1,6 +1,8 @@
 package ac.at.tuwien.inso.ble.database;
 
-public class Session {
+import java.io.Serializable;
+
+public class Session implements Serializable {
 
     private long id;
     private long time;
