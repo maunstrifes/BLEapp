@@ -77,6 +77,21 @@ public class BluetoothLeService extends Service {
             recordService = null;
         }
     };
+    private HrvParameterService hrvParameterService;
+    private final ServiceConnection hrvParameterServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName,
+                                       IBinder service) {
+            hrvParameterService = ((HrvParameterService.LocalBinder) service)
+                    .getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            hrvParameterService = null;
+        }
+    };
     private BluetoothAdapter bluetoothAdapter;
     private String bluetoothDeviceAddress;
     private BluetoothGatt bluetoothGatt;
@@ -100,6 +115,8 @@ public class BluetoothLeService extends Service {
 
         Intent recordServiceIntent = new Intent(this, RecordService.class);
         bindService(recordServiceIntent, recordServiceConnection, BIND_AUTO_CREATE);
+        Intent hrvParameterServiceIntent = new Intent(this, HrvParameterService.class);
+        bindService(hrvParameterServiceIntent, hrvParameterServiceConnection, BIND_AUTO_CREATE);
         return Service.START_STICKY;
     }
 

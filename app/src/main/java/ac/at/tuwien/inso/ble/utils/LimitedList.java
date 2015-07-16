@@ -11,6 +11,7 @@ import java.util.LinkedList;
 public class LimitedList<E> extends LinkedList<E> {
 
     private int limit;
+    private int itemsAdded = 0;
 
     public LimitedList(int limit) {
         this.limit = limit;
@@ -19,9 +20,14 @@ public class LimitedList<E> extends LinkedList<E> {
     @Override
     public boolean add(E o) {
         super.add(o);
+        itemsAdded++;
         while (size() > limit) {
             super.remove();
         }
         return true;
+    }
+
+    public int getItemsAdded() {
+        return itemsAdded;
     }
 }

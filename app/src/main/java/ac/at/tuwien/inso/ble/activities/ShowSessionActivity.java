@@ -81,6 +81,11 @@ public class ShowSessionActivity extends Activity {
         return new Pair<Number, Number>(Math.floor(min.doubleValue() / 10) * 10, Math.ceil(max.doubleValue() / 10) * 10);
     }
 
+    /**
+     * Returns the values of the session-file (heart rates and timestamps)
+     *
+     * @return
+     */
     private Pair<List<Date>, List<Number>> readFile() {
         File file = new File(Environment.getExternalStorageDirectory()
                 .getPath() + "/" + session.getId() + ".csv");
