@@ -50,4 +50,7 @@
     <string name="heart_rate">Heart Rate</string>
     <string name="time">Time</string>
 
+    <!-- other -->
+    <string name="loading">loading...</string>
+
 </resources>

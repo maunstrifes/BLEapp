@@ -1,12 +1,14 @@
 package ac.at.tuwien.inso.ble.activities;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
@@ -57,10 +59,7 @@ public class ShowSessionActivity extends Activity {
             }
         }
     };
-    private Session session;
     private XYPlot plot;
-    // HR values
-    private List<Number> values;
     /**
      * Service for calculating the HRV parameters
      */
@@ -92,14 +91,7 @@ public class ShowSessionActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_session);
-        final Intent intent = getIntent();
-        session = (Session) intent.getSerializableExtra(AllSessionsActivity.EXTRAS_SESSION);
         plot = (XYPlot) findViewById(R.id.hrPlot);
-
-        // Read data from session
-        Pair<List<Date>, List<Number>> result = readFile();
-        values = result.second;
-        plotHr();
 
         // Register for HRV Data
         IntentFilter intentFilter = new IntentFilter();
@@ -119,15 +111,12 @@ public class ShowSessionActivity extends Activity {
     }
 
     /**
-     * Broadcasts HR read from file before (called after HrvParameterService was started)
+     * Reads and broadcasts HR (called after HrvParameterService was started)
      */
     private void sendHrToHrvParameterService() {
-
-        for (Number heartRate : values) {
-            final Intent intent = new Intent(Events.ACTION_DATA_AVAILABLE.toString());
-            intent.putExtra(Events.HR_DATA.toString(), String.valueOf(heartRate));
-            sendBroadcast(intent);
-        }
+        final Intent intent = getIntent();
+        Session session = (Session) intent.getSerializableExtra(AllSessionsActivity.EXTRAS_SESSION);
+        new SessionFileReaderTask().execute(session);
     }
 
     /**
@@ -135,18 +124,18 @@ public class ShowSessionActivity extends Activity {
      */
     private void showHrvParameters(HrvParameters hrvParameters) {
         System.out.println(hrvParameters.getMeanHr());
-        System.out.println(hrvParameters.getSdnn());
-        System.out.println(hrvParameters.getRmssd());
-        System.out.println(hrvParameters.getPnn50());
+//        System.out.println(hrvParameters.getSdnn());
+//        System.out.println(hrvParameters.getRmssd());
+//        System.out.println(hrvParameters.getPnn50());
         // TODO in gui ausgeben!
     }
 
     /**
      * Plots the heart rate
      */
-    private void plotHr() {
+    private void plotHr(List<Double> values) {
 
-        Pair<Number, Number> minmax = getBoundaries(values);
+        Pair<Double, Double> minmax = getBoundaries(values);
         XYSeries hrSeries = new SimpleXYSeries(
                 values, SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "Heart Rate");
         LineAndPointFormatter seriesFormat = new LineAndPointFormatter();
@@ -156,6 +145,7 @@ public class ShowSessionActivity extends Activity {
         plot.setRangeBoundaries(minmax.first, minmax.second, BoundaryMode.FIXED);
         plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 10);
         plot.setMarkupEnabled(false);
+        plot.invalidate();
         //TODO: Datum passend ausgeben (wie?)
     }
 
@@ -166,10 +156,10 @@ public class ShowSessionActivity extends Activity {
      * @param values
      * @return
      */
-    private Pair<Number, Number> getBoundaries(List<Number> values) {
-        Number min = Integer.MAX_VALUE;
-        Number max = Integer.MIN_VALUE;
-        for (Number number : values) {
+    private Pair<Double, Double> getBoundaries(List<Double> values) {
+        Double min = Double.MAX_VALUE;
+        Double max = Double.MIN_VALUE;
+        for (Double number : values) {
             if (number.intValue() < min.intValue()) {
                 min = number;
             }
@@ -177,35 +167,7 @@ public class ShowSessionActivity extends Activity {
                 max = number;
             }
         }
-        return new Pair<Number, Number>(Math.floor(min.doubleValue() / 10) * 10, Math.ceil(max.doubleValue() / 10) * 10);
-    }
-
-    /**
-     * Returns the values of the session-file (heart rates and timestamps)
-     *
-     * @return
-     */
-    private Pair<List<Date>, List<Number>> readFile() {
-        File file = new File(Environment.getExternalStorageDirectory()
-                .getPath() + "/" + session.getId() + ".csv");
-        List<Number> valueList = new ArrayList<Number>(100);
-        List<Date> dateList = new ArrayList<Date>(100);
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            String s;
-            while ((s = reader.readLine()) != null) {
-                String[] tmp = s.split(",");
-                dateList.add(DateHelper.parse(tmp[0]));
-                valueList.add(Integer.valueOf(tmp[1]));
-            }
-        } catch (FileNotFoundException e) {
-            Toast.makeText(this, "Session data not found!", Toast.LENGTH_LONG).show();
-            //TODO: error handling?
-        } catch (IOException e) {
-            Toast.makeText(this, "Error reading session data!", Toast.LENGTH_LONG).show();
-            //TODO: error handling?
-        }
-        return new Pair<List<Date>, List<Number>>(dateList, valueList);
+        return new Pair<Double, Double>(Math.floor(min.doubleValue() / 10) * 10, Math.ceil(max.doubleValue() / 10) * 10);
     }
 
     @Override
@@ -228,5 +190,70 @@ public class ShowSessionActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Reads the Session file async and then broadcasts and plots the HR data
+     */
+    private class SessionFileReaderTask extends AsyncTask<Session, Void, List<Double>> {
+
+        ProgressDialog asyncDialog = new ProgressDialog(ShowSessionActivity.this);
+
+        @Override
+        protected void onPreExecute() {
+            asyncDialog.setMessage(getString(R.string.loading));
+            asyncDialog.show();
+        }
+
+        @Override
+        protected List<Double> doInBackground(Session... sessions) {
+            if (sessions.length > 1) throw new RuntimeException("too many sessions, why?");
+            // Read data from session
+            Pair<List<Date>, List<Double>> result = readFile(sessions[0]);
+            return result.second;
+        }
+
+        /**
+         * Broadcasts HR values and plots HR
+         *
+         * @param values
+         */
+        protected void onPostExecute(List<Double> values) {
+            for (Number heartRate : values) {
+                final Intent intent = new Intent(Events.ACTION_DATA_AVAILABLE.toString());
+                intent.putExtra(Events.HR_DATA.toString(), String.valueOf(heartRate));
+                sendBroadcast(intent);
+            }
+            plotHr(values);
+            asyncDialog.dismiss();
+        }
+
+        /**
+         * Returns the values of the session-file (heart rates and timestamps)
+         *
+         * @return
+         */
+        private Pair<List<Date>, List<Double>> readFile(Session session) {
+            File file = new File(Environment.getExternalStorageDirectory()
+                    .getPath() + "/" + session.getId() + ".csv");
+            List<Double> valueList = new ArrayList<Double>(100);
+            List<Date> dateList = new ArrayList<Date>(100);
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                String s;
+                while ((s = reader.readLine()) != null) {
+                    String[] tmp = s.split(",");
+                    dateList.add(DateHelper.parse(tmp[0]));
+                    valueList.add(Double.valueOf(tmp[1]));
+                }
+            } catch (FileNotFoundException e) {
+                Toast.makeText(ShowSessionActivity.this, "Session data not found!", Toast.LENGTH_LONG).show();
+                //TODO: error handling?
+            } catch (IOException e) {
+                Toast.makeText(ShowSessionActivity.this, "Error reading session data!", Toast.LENGTH_LONG).show();
+                //TODO: error handling?
+            }
+            return new Pair<List<Date>, List<Double>>(dateList, valueList);
+        }
     }
 }

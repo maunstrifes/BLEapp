@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class BaseCalculator {
 
-    private final LimitedList<Double> heartRate;
+    private final List<Double> heartRate;
     private List<Double> intervals;
     private List<Double> differences; //absolute
     private double sumRr;
@@ -19,7 +19,7 @@ public class BaseCalculator {
     private double rmssd;
     private double pnn50;
 
-    public BaseCalculator(LimitedList<Double> heartRate) {
+    public BaseCalculator(List<Double> heartRate) {
         this.heartRate = heartRate;
     }
 
