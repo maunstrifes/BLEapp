@@ -15,8 +15,8 @@ import java.util.Date;
 
 import ac.at.tuwien.inso.ble.database.Session;
 import ac.at.tuwien.inso.ble.database.SessionDataSource;
-import ac.at.tuwien.inso.ble.utils.BleAction;
 import ac.at.tuwien.inso.ble.utils.DateHelper;
+import ac.at.tuwien.inso.ble.utils.Events;
 import ac.at.tuwien.inso.ble.utils.FileHelper;
 
 public class RecordService extends Service {
@@ -28,10 +28,10 @@ public class RecordService extends Service {
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            final BleAction action = BleAction.valueOf(intent.getAction());
-            if (BleAction.ACTION_DATA_AVAILABLE.equals(action)) {
+            final Events action = Events.valueOf(intent.getAction());
+            if (Events.ACTION_DATA_AVAILABLE.equals(action)) {
                 writeData(intent
-                        .getStringExtra(BleAction.EXTRA_DATA.toString()));
+                        .getStringExtra(Events.HR_DATA.toString()));
             }
         }
     };
@@ -47,7 +47,7 @@ public class RecordService extends Service {
         Session session = datasource.createSession(new Date().getTime());
         writer = FileHelper.createFile(session);
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(BleAction.ACTION_DATA_AVAILABLE.toString());
+        intentFilter.addAction(Events.ACTION_DATA_AVAILABLE.toString());
         registerReceiver(broadcastReceiver, intentFilter);
         Log.i(TAG, "started, session created");
     }

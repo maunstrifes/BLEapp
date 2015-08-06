@@ -44,9 +44,9 @@ import android.util.Log;
 import java.util.List;
 import java.util.UUID;
 
+import ac.at.tuwien.inso.ble.R;
 import ac.at.tuwien.inso.ble.activities.DeviceControlActivity;
-import ac.at.tuwien.inso.ble.utils.BleAction;
-import pro.apus.heartrate.R;
+import ac.at.tuwien.inso.ble.utils.Events;
 
 /**
  * Service for managing connection and data communication with a GATT server
@@ -62,6 +62,9 @@ public class BluetoothLeService extends Service {
     private final BluetoothGattCallback gattCallback = new MyBluetoothGattCallback();
     private final IBinder binder = new LocalBinder();
 
+    /**
+     * Service for recording the heart rate
+     */
     private RecordService recordService;
     private final ServiceConnection recordServiceConnection = new ServiceConnection() {
 
@@ -77,6 +80,10 @@ public class BluetoothLeService extends Service {
             recordService = null;
         }
     };
+
+    /**
+     * Service for calculating the HRV parameters
+     */
     private HrvParameterService hrvParameterService;
     private final ServiceConnection hrvParameterServiceConnection = new ServiceConnection() {
 
@@ -211,7 +218,7 @@ public class BluetoothLeService extends Service {
             }
             final int heartRate = characteristic.getIntValue(format, 1);
             Log.d(TAG, String.format("Received heart rate: %d", heartRate));
-            intent.putExtra(BleAction.EXTRA_DATA.toString(), String.valueOf(heartRate));
+            intent.putExtra(Events.HR_DATA.toString(), String.valueOf(heartRate));
         } else {
             // For all other profiles, writes the data formatted in HEX.
             final byte[] data = characteristic.getValue();
@@ -220,7 +227,7 @@ public class BluetoothLeService extends Service {
                         data.length);
                 for (byte byteChar : data)
                     stringBuilder.append(String.format("%02X ", byteChar));
-                intent.putExtra(BleAction.EXTRA_DATA.toString(), new String(data) + "\n"
+                intent.putExtra(Events.HR_DATA.toString(), new String(data) + "\n"
                         + stringBuilder.toString());
             }
         }
@@ -329,16 +336,16 @@ public class BluetoothLeService extends Service {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status,
                                             int newState) {
-            BleAction intentAction;
+            Events intentAction;
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                intentAction = BleAction.ACTION_GATT_CONNECTED;
+                intentAction = Events.ACTION_GATT_CONNECTED;
                 broadcastUpdate(intentAction.toString());
                 Log.i(TAG, "Connected to GATT server.");
                 Log.i(TAG, "Attempting to start service discovery:"
                         + bluetoothGatt.discoverServices());
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                intentAction = BleAction.ACTION_GATT_DISCONNECTED;
+                intentAction = Events.ACTION_GATT_DISCONNECTED;
                 Log.i(TAG, "Disconnected from GATT server.");
                 broadcastUpdate(intentAction.toString());
                 close(); //TODO: oder doch nur wenn ausdrücklich gewünscht und nicht passiert? (HR Brustgurt Verhalten??)
@@ -358,14 +365,14 @@ public class BluetoothLeService extends Service {
         public void onCharacteristicRead(BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                broadcastUpdate(BleAction.ACTION_DATA_AVAILABLE.toString(), characteristic);
+                broadcastUpdate(Events.ACTION_DATA_AVAILABLE.toString(), characteristic);
             }
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
-            broadcastUpdate(BleAction.ACTION_DATA_AVAILABLE.toString(), characteristic);
+            broadcastUpdate(Events.ACTION_DATA_AVAILABLE.toString(), characteristic);
         }
     }
 

@@ -8,7 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
-import pro.apus.heartrate.R;
+import ac.at.tuwien.inso.ble.R;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 

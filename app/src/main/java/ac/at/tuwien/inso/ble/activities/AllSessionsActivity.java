@@ -12,10 +12,10 @@ import android.widget.ListView;
 
 import java.util.List;
 
+import ac.at.tuwien.inso.ble.R;
 import ac.at.tuwien.inso.ble.adapter.SessionAdapter;
 import ac.at.tuwien.inso.ble.database.Session;
 import ac.at.tuwien.inso.ble.database.SessionDataSource;
-import pro.apus.heartrate.R;
 
 public class AllSessionsActivity extends ListActivity {
 

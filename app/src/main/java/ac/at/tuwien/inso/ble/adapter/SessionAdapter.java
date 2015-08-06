@@ -11,8 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import ac.at.tuwien.inso.ble.R;
 import ac.at.tuwien.inso.ble.database.Session;
-import pro.apus.heartrate.R;
 
 public class SessionAdapter extends ArrayAdapter<Session> {
     private final Activity context;

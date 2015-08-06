@@ -42,7 +42,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import pro.apus.heartrate.R;
+import ac.at.tuwien.inso.ble.R;
 
 /**
  * Activity for scanning and displaying available Bluetooth LE devices.

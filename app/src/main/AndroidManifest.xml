@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="pro.apus.heartrate"
+    package="ac.at.tuwien.inso.ble"
     android:versionCode="1"
     android:versionName="1.0">
 
@@ -67,6 +67,9 @@ limitations under the License.
 
         <service
             android:name="ac.at.tuwien.inso.ble.services.BluetoothLeService"
+            android:enabled="true" />
+        <service
+            android:name="ac.at.tuwien.inso.ble.services.HrvParameterService"
             android:enabled="true" />
         <service
             android:name="ac.at.tuwien.inso.ble.services.RecordService"

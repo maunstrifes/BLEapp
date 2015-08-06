@@ -48,12 +48,9 @@ import org.achartengine.renderer.XYSeriesRenderer;
 
 import java.util.Date;
 
+import ac.at.tuwien.inso.ble.R;
 import ac.at.tuwien.inso.ble.services.BluetoothLeService;
-import ac.at.tuwien.inso.ble.utils.BleAction;
-import pro.apus.heartrate.R;
-
-//import android.widget.ExpandableListView;
-//import android.widget.SimpleExpandableListAdapter;
+import ac.at.tuwien.inso.ble.utils.Events;
 
 /**
  * For a given BLE device, this Activity provides the user interface to connect,
@@ -69,36 +66,6 @@ public class DeviceControlActivity extends Activity {
             .getSimpleName();
     // Various UI stuff
     public static boolean currentlyVisible;
-    // Handles various events fired by the Service.
-    // ACTION_GATT_CONNECTED: connected to a GATT server.
-    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
-    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
-    // ACTION_DATA_AVAILABLE: received data from the device. This can be a
-    // result of read
-    // or notification operations.
-    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final BleAction action = BleAction.valueOf(intent.getAction());
-            if (BleAction.ACTION_GATT_CONNECTED.equals(action)) {
-                invalidateOptionsMenu();
-            } else if (BleAction.ACTION_GATT_DISCONNECTED
-                    .equals(action)) {
-                invalidateOptionsMenu();
-                clearUI();
-            } else if (BleAction.ACTION_GATT_SERVICES_DISCOVERED
-                    .equals(action)) {
-                // Show all the supported services and characteristics on the
-                // user interface.
-//                displayGattServices(mBluetoothLeService
-//                        .getSupportedGattServices());
-                // mButtonStop.setVisibility(View.VISIBLE);
-            } else if (BleAction.ACTION_DATA_AVAILABLE.equals(action)) {
-                displayData(intent
-                        .getStringExtra(BleAction.EXTRA_DATA.toString()));
-            }
-        }
-    };
     private BluetoothLeService mBluetoothLeService;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -114,25 +81,53 @@ public class DeviceControlActivity extends Activity {
             mBluetoothLeService = null;
         }
     };
-
     private TextView mDataField;
     private String mDeviceName;
     private String mDeviceAddress;
-
     // Chart stuff
     private GraphicalView mChart;
     private XYMultipleSeriesDataset mDataset = new XYMultipleSeriesDataset();
     private XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer();
     private XYSeries mCurrentSeries;
+    // Handles various events fired by the Service.
+    // ACTION_GATT_CONNECTED: connected to a GATT server.
+    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
+    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
+    // ACTION_DATA_AVAILABLE: received data from the device. This can be a
+    // result of read
+    // or notification operations.
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final Events action = Events.valueOf(intent.getAction());
+            if (Events.ACTION_GATT_CONNECTED.equals(action)) {
+                invalidateOptionsMenu();
+            } else if (Events.ACTION_GATT_DISCONNECTED
+                    .equals(action)) {
+                invalidateOptionsMenu();
+                clearUI();
+            } else if (Events.ACTION_GATT_SERVICES_DISCOVERED
+                    .equals(action)) {
+                // Show all the supported services and characteristics on the
+                // user interface.
+//                displayGattServices(mBluetoothLeService
+//                        .getSupportedGattServices());
+                // mButtonStop.setVisibility(View.VISIBLE);
+            } else if (Events.ACTION_DATA_AVAILABLE.equals(action)) {
+                displayData(intent
+                        .getStringExtra(Events.HR_DATA.toString()));
+            }
+        }
+    };
     private XYSeriesRenderer mCurrentRenderer;
 
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(BleAction.ACTION_GATT_CONNECTED.toString());
-        intentFilter.addAction(BleAction.ACTION_GATT_DISCONNECTED.toString());
+        intentFilter.addAction(Events.ACTION_GATT_CONNECTED.toString());
+        intentFilter.addAction(Events.ACTION_GATT_DISCONNECTED.toString());
         intentFilter
-                .addAction(BleAction.ACTION_GATT_SERVICES_DISCOVERED.toString());
-        intentFilter.addAction(BleAction.ACTION_DATA_AVAILABLE.toString());
+                .addAction(Events.ACTION_GATT_SERVICES_DISCOVERED.toString());
+        intentFilter.addAction(Events.ACTION_DATA_AVAILABLE.toString());
         return intentFilter;
     }
 
