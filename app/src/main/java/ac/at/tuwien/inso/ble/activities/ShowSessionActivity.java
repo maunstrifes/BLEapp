@@ -193,7 +193,7 @@ public class ShowSessionActivity extends Activity implements AdapterView.OnItemS
         renderer.setAxisTitleTextSize(textSize);
         renderer.setChartTitleTextSize(textSize);
 
-        renderer.setMargins(new int[]{0, (int)textSize*2, 10, 0});
+        renderer.setMargins(new int[]{0, (int) textSize * 2, 10, 0});
 
         chart = ChartFactory.getLineChartView(this, dataset, renderer);
         ((LinearLayout) findViewById(R.id.chart)).addView(chart, 0);
