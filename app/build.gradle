@@ -37,7 +37,6 @@ allprojects {
 
 dependencies {
     compile files('libs/commons-logging-1.1.1.jar')
-    compile "com.androidplot:androidplot-core:0.6.1"
     compile "junit:junit:4.12"
     compile "org.achartengine:achartengine:1.2.0"
 }

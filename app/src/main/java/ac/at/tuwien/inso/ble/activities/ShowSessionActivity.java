@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,14 +16,16 @@ import android.os.IBinder;
 import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.XYPlot;
-import com.androidplot.xy.XYSeries;
-import com.androidplot.xy.XYStepMode;
+import org.achartengine.ChartFactory;
+import org.achartengine.GraphicalView;
+import org.achartengine.chart.PointStyle;
+import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.model.XYSeries;
+import org.achartengine.renderer.XYMultipleSeriesRenderer;
+import org.achartengine.renderer.XYSeriesRenderer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -59,7 +62,10 @@ public class ShowSessionActivity extends Activity {
             }
         }
     };
-    private XYPlot plot;
+    private GraphicalView chart;
+    private XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+    private XYMultipleSeriesRenderer renderer = new XYMultipleSeriesRenderer();
+    private XYSeries series;
     /**
      * Service for calculating the HRV parameters
      */
@@ -91,7 +97,7 @@ public class ShowSessionActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_session);
-        plot = (XYPlot) findViewById(R.id.hrPlot);
+        initPlot();
 
         // Register for HRV Data
         IntentFilter intentFilter = new IntentFilter();
@@ -101,6 +107,31 @@ public class ShowSessionActivity extends Activity {
         // Start HrvParameter Service
         Intent hrvParameterServiceIntent = new Intent(this, HrvParameterService.class);
         bindService(hrvParameterServiceIntent, hrvParameterServiceConnection, BIND_AUTO_CREATE);
+    }
+
+    private void initPlot() {
+
+        series = new XYSeries("HR");
+        dataset.addSeries(series);
+
+        XYSeriesRenderer xySeriesRenderer = new XYSeriesRenderer();
+        xySeriesRenderer.setLineWidth(2);
+        xySeriesRenderer.setColor(Color.RED);
+        // Include low and max value
+        xySeriesRenderer.setDisplayBoundingPoints(true);
+        // we add point markers
+        xySeriesRenderer.setPointStyle(PointStyle.CIRCLE);
+        xySeriesRenderer.setPointStrokeWidth(3);
+
+        renderer = new XYMultipleSeriesRenderer();
+        renderer.addSeriesRenderer(xySeriesRenderer);
+        // We want to avoid black border
+        renderer.setMarginsColor(Color.argb(0x00, 0xff, 0x00, 0x00)); // transparent margins
+        // Disable Pan on two axis
+//        renderer.setPanEnabled(false, false);
+        renderer.setShowGrid(true);
+        chart = ChartFactory.getLineChartView(this, dataset, renderer);
+        ((LinearLayout) findViewById(R.id.chart)).addView(chart, 0);
     }
 
     @Override
@@ -136,16 +167,26 @@ public class ShowSessionActivity extends Activity {
     private void plotHr(List<Double> values) {
 
         Pair<Double, Double> minmax = getBoundaries(values);
-        XYSeries hrSeries = new SimpleXYSeries(
-                values, SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "Heart Rate");
-        LineAndPointFormatter seriesFormat = new LineAndPointFormatter();
-        seriesFormat.configure(getApplicationContext(),
-                R.xml.hrformatter);
-        plot.addSeries(hrSeries, seriesFormat);
-        plot.setRangeBoundaries(minmax.first, minmax.second, BoundaryMode.FIXED);
-        plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 10);
-        plot.setMarkupEnabled(false);
-        plot.invalidate();
+        for (int i = 0; i < values.size(); i++) {
+            series.add(i, values.get(i));
+        }
+
+//        XYSeries hrSeries = new SimpleXYSeries(
+//                values, SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "Heart Rate");
+//        LineAndPointFormatter seriesFormat = new LineAndPointFormatter();
+//        seriesFormat.configure(getApplicationContext(),
+//                R.xml.hrformatter);
+//        plot.addSeries(hrSeries, seriesFormat);
+//        plot.setRangeBoundaries(minmax.first, minmax.second, BoundaryMode.FIXED);
+//        plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 10);
+//        plot.setMarkupEnabled(false);
+//        plot.invalidate();
+
+
+        renderer.setYAxisMin(minmax.first);
+        renderer.setYAxisMax(minmax.second);
+
+        chart.invalidate();
         //TODO: Datum passend ausgeben (wie?)
     }
 
