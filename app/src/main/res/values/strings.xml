@@ -47,10 +47,26 @@
     <string name="menu_delete">Delete</string>
     <string name="session_delete">Delete Session</string>
 
-    <string name="heart_rate">Heart Rate</string>
+
     <string name="time">Time</string>
+
+    <!-- Parameters -->
+    <string name="heart_rate">Heart Rate</string>
+    <string name="avg_heart_rate">Avg. Heart Rate</string>
+    <string name="sdnn">SDNN</string>
+    <string name="rmssd">RMSSD</string>
+    <string name="pnn50">pNN50</string>
+
+    <string-array name="parameters">
+        <item>@string/heart_rate</item>
+        <item>@string/avg_heart_rate</item>
+        <item>@string/sdnn</item>
+        <item>@string/rmssd</item>
+        <item>@string/pnn50</item>
+    </string-array>
 
     <!-- other -->
     <string name="loading">loading...</string>
+    <string name="show_datapoints">Show datapoints</string>
 
 </resources>

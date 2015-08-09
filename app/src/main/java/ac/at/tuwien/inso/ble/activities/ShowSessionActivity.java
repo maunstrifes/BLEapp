@@ -13,10 +13,17 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.util.DisplayMetrics;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import org.achartengine.ChartFactory;
@@ -34,7 +41,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ac.at.tuwien.inso.ble.HrvParameters;
 import ac.at.tuwien.inso.ble.R;
@@ -46,7 +55,9 @@ import ac.at.tuwien.inso.ble.utils.Events;
 /**
  * Shows already recorded sessions
  */
-public class ShowSessionActivity extends Activity {
+public class ShowSessionActivity extends Activity implements AdapterView.OnItemSelectedListener {
+
+    private Map<String, List<Double>> valueMap = new HashMap<String, List<Double>>();
 
     /**
      * Receiver for HRV data
@@ -97,6 +108,18 @@ public class ShowSessionActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_session);
+
+        // Init Dropdown of parameters
+        Spinner spinner = (Spinner) findViewById(R.id.params_spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.parameters, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
+        // Init Map for data
+        for (String param : getResources().getStringArray(R.array.parameters)) {
+            valueMap.put(param, new ArrayList<Double>());
+        }
+
         initPlot();
 
         // Register for HRV Data
@@ -109,27 +132,69 @@ public class ShowSessionActivity extends Activity {
         bindService(hrvParameterServiceIntent, hrvParameterServiceConnection, BIND_AUTO_CREATE);
     }
 
+    /**
+     * Selects the data according to the chosen value of the Spinner
+     *
+     * @param parent
+     * @param view
+     * @param pos
+     * @param id
+     */
+    public void onItemSelected(AdapterView<?> parent, View view,
+                               int pos, long id) {
+        String label = (String) parent.getItemAtPosition(pos);
+        plot(label, valueMap.get(label));
+    }
+
+    /**
+     * Needed for Spinner with Parameters
+     *
+     * @param parent
+     */
+    public void onNothingSelected(AdapterView<?> parent) {
+        // TODO?
+    }
+
+    /**
+     * Shows or removes datapoints
+     *
+     * @param view
+     */
+    public void onCheckboxClicked(View view) {
+        PointStyle style = ((CheckBox) view).isChecked() ? PointStyle.CIRCLE : PointStyle.POINT;
+        ((XYSeriesRenderer) renderer.getSeriesRenderers()[0]).setPointStyle(style);
+        chart.invalidate();
+    }
+
     private void initPlot() {
 
-        series = new XYSeries("HR");
+        series = new XYSeries("");
         dataset.addSeries(series);
 
         XYSeriesRenderer xySeriesRenderer = new XYSeriesRenderer();
         xySeriesRenderer.setLineWidth(2);
         xySeriesRenderer.setColor(Color.RED);
-        // Include low and max value
         xySeriesRenderer.setDisplayBoundingPoints(true);
-        // we add point markers
         xySeriesRenderer.setPointStyle(PointStyle.CIRCLE);
         xySeriesRenderer.setPointStrokeWidth(3);
+        // Don't show legend as we use the same series for different stuff (chosen by Spinner)
+        xySeriesRenderer.setShowLegendItem(false);
 
         renderer = new XYMultipleSeriesRenderer();
         renderer.addSeriesRenderer(xySeriesRenderer);
-        // We want to avoid black border
         renderer.setMarginsColor(Color.argb(0x00, 0xff, 0x00, 0x00)); // transparent margins
-        // Disable Pan on two axis
-//        renderer.setPanEnabled(false, false);
         renderer.setShowGrid(true);
+
+        // Calculate and set text size (https://www.google.com/design/spec/style/typography.html)
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        float textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 18, metrics);
+        renderer.setLabelsTextSize(textSize);
+        renderer.setLegendTextSize(textSize);
+        renderer.setAxisTitleTextSize(textSize);
+        renderer.setChartTitleTextSize(textSize);
+
+        renderer.setMargins(new int[]{0, (int)textSize*2, 10, 0});
+
         chart = ChartFactory.getLineChartView(this, dataset, renderer);
         ((LinearLayout) findViewById(R.id.chart)).addView(chart, 0);
     }
@@ -154,37 +219,28 @@ public class ShowSessionActivity extends Activity {
      * Shows the received HRV data
      */
     private void showHrvParameters(HrvParameters hrvParameters) {
-        System.out.println(hrvParameters.getMeanHr());
-//        System.out.println(hrvParameters.getSdnn());
-//        System.out.println(hrvParameters.getRmssd());
-//        System.out.println(hrvParameters.getPnn50());
-        // TODO in gui ausgeben!
+        valueMap.get(getString(R.string.avg_heart_rate)).add(hrvParameters.getMeanHr());
+        valueMap.get(getString(R.string.sdnn)).add(hrvParameters.getSdnn());
+        valueMap.get(getString(R.string.rmssd)).add(hrvParameters.getRmssd());
+        valueMap.get(getString(R.string.pnn50)).add(hrvParameters.getPnn50());
     }
 
     /**
      * Plots the heart rate
      */
-    private void plotHr(List<Double> values) {
+    private void plot(String label, List<Double> values) {
 
         Pair<Double, Double> minmax = getBoundaries(values);
+        series.clearSeriesValues();
         for (int i = 0; i < values.size(); i++) {
             series.add(i, values.get(i));
         }
-
-//        XYSeries hrSeries = new SimpleXYSeries(
-//                values, SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "Heart Rate");
-//        LineAndPointFormatter seriesFormat = new LineAndPointFormatter();
-//        seriesFormat.configure(getApplicationContext(),
-//                R.xml.hrformatter);
-//        plot.addSeries(hrSeries, seriesFormat);
-//        plot.setRangeBoundaries(minmax.first, minmax.second, BoundaryMode.FIXED);
-//        plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 10);
-//        plot.setMarkupEnabled(false);
-//        plot.invalidate();
-
-
+        renderer.setXAxisMin(0);
+        renderer.setXAxisMax(values.size());
         renderer.setYAxisMin(minmax.first);
         renderer.setYAxisMax(minmax.second);
+        renderer.setPanLimits(new double[]{0, values.size(), minmax.first, minmax.second});
+        renderer.setYTitle(label);
 
         chart.invalidate();
         //TODO: Datum passend ausgeben (wie?)
@@ -260,12 +316,13 @@ public class ShowSessionActivity extends Activity {
          * @param values
          */
         protected void onPostExecute(List<Double> values) {
+            valueMap.put(getString(R.string.heart_rate), values);
             for (Number heartRate : values) {
                 final Intent intent = new Intent(Events.ACTION_DATA_AVAILABLE.toString());
                 intent.putExtra(Events.HR_DATA.toString(), String.valueOf(heartRate));
                 sendBroadcast(intent);
             }
-            plotHr(values);
+            plot(getString(R.string.heart_rate), values);
             asyncDialog.dismiss();
         }
 
