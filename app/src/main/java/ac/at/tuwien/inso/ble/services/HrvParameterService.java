@@ -21,7 +21,6 @@ import ac.at.tuwien.inso.ble.utils.LimitedList;
 public class HrvParameterService extends Service {
 
     private static final int WINDOW_SIZE = 256;
-    private static final int PARAM_HISTORY_SIZE = 100;
     private static final int SAMPLES_TO_CALC = 64; //TODO: 64
 
     private final static String TAG = HrvParameterService.class.getSimpleName();

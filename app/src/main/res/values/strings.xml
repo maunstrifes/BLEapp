@@ -30,6 +30,8 @@
 
     <!-- Main Activity -->
     <string name="session_start">Start Session</string>
+    <string name="pacer_start">Start Breath Pacer</string>
+    <string name="pacer_stop">Stop Breath Pacer</string>
 
     <!-- Menu items -->
     <string name="menu_connect">Connect</string>

@@ -27,14 +27,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Paint.Align;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -58,7 +60,7 @@ import ac.at.tuwien.inso.ble.utils.Events;
  * device. The Activity communicates with {@code BluetoothLeService}, which in
  * turn interacts with the Bluetooth LE API.
  */
-public class DeviceControlActivity extends Activity {
+public class DeviceControlActivity extends Activity implements View.OnClickListener {
     // BLE stuff
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
@@ -84,6 +86,13 @@ public class DeviceControlActivity extends Activity {
     private TextView mDataField;
     private String mDeviceName;
     private String mDeviceAddress;
+    // Breath Pacer
+    private Button pacerBtn;
+    private GraphicalView pacerChart;
+    private XYMultipleSeriesDataset datasetPacer = new XYMultipleSeriesDataset();
+    private XYMultipleSeriesRenderer rendererPacer = new XYMultipleSeriesRenderer();
+    private XYSeriesRenderer currentRendererPacer;
+    private XYSeries seriesPacer;
     // Chart stuff
     private GraphicalView mChart;
     private XYMultipleSeriesDataset mDataset = new XYMultipleSeriesDataset();
@@ -120,6 +129,7 @@ public class DeviceControlActivity extends Activity {
         }
     };
     private XYSeriesRenderer mCurrentRenderer;
+    private BreathPaceGenerator paceGenerator;
 
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
@@ -220,16 +230,18 @@ public class DeviceControlActivity extends Activity {
         startService(gattServiceIntent);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
-        LinearLayout layout = (LinearLayout) findViewById(R.id.chart);
         if (mChart == null) {
             initChart();
             mChart = ChartFactory.getTimeChartView(this, mDataset, mRenderer,
                     "hh:mm");
+            LinearLayout layout = (LinearLayout) findViewById(R.id.chart);
             layout.addView(mChart);
         } else {
             mChart.repaint();
         }
 
+        pacerBtn = (Button) findViewById(R.id.pacer_start);
+        pacerBtn.setOnClickListener(this);
     }
 
     @Override
@@ -245,25 +257,14 @@ public class DeviceControlActivity extends Activity {
 //        }
     }
 
-    // this is called when the screen rotates.
-    // (onCreate is no longer called when screen rotates due to manifest, see:
-    // android:configChanges)
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        // setContentView(R.layout.heartrate);
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Log.i(TAG, "ORIENTATION_LANDSCAPE");
-        } else {
-            Log.i(TAG, "ORIENTATION_PORTRAIT");
-        }
-    }
-
     @Override
     protected void onPause() {
         Log.i(TAG, "onPause");
         super.onPause();
         currentlyVisible = false;
+        if (paceGenerator != null) {
+            paceGenerator.cancel(true);
+        }
     }
 
     @Override
@@ -331,6 +332,135 @@ public class DeviceControlActivity extends Activity {
             }
         } catch (Exception e) {
             Log.e(TAG, "Exception while parsing: " + data);
+        }
+    }
+
+    /**
+     * Start the Breath Pacer
+     *
+     * @param view
+     */
+    @Override
+    public void onClick(View view) {
+
+        if (view.equals(pacerBtn)) {
+            if (pacerBtn.getText().equals(getString(R.string.pacer_start))) {
+                pacerBtn.setText(getString(R.string.pacer_stop));
+
+                if (pacerChart == null) {
+                    initPacerChart();
+                    pacerChart = ChartFactory.getTimeChartView(this, datasetPacer, rendererPacer,
+                            "hh:mm");
+                    LinearLayout layout = (LinearLayout) findViewById(R.id.pacer_chart);
+                    layout.addView(pacerChart);
+                } else {
+                    pacerChart.repaint();
+                }
+                paceGenerator = new BreathPaceGenerator();
+                paceGenerator.execute();
+            } else {
+                pacerBtn.setText(getString(R.string.pacer_start));
+                paceGenerator.cancel(true);
+            }
+        }
+    }
+
+    private void initPacerChart() {
+
+        Log.i(TAG, "initChart");
+        if (seriesPacer == null) {
+            seriesPacer = new XYSeries("");
+            datasetPacer.addSeries(seriesPacer);
+        }
+
+        if (currentRendererPacer == null) {
+            currentRendererPacer = new XYSeriesRenderer();
+            currentRendererPacer.setLineWidth(6);
+
+            currentRendererPacer.setColor(Color.BLUE);
+
+            rendererPacer.setAxisTitleTextSize(70);
+            rendererPacer.setPointSize(5);
+            rendererPacer.setPanEnabled(true);
+
+            rendererPacer.setYAxisMin(0);
+            rendererPacer.setYAxisMax(1);
+            rendererPacer.setXAxisMin(0);
+            rendererPacer.setXAxisMax(100);
+
+            rendererPacer.setShowLegend(false);
+
+            rendererPacer.setApplyBackgroundColor(true);
+            rendererPacer.setBackgroundColor(Color.BLACK);
+            rendererPacer.setMarginsColor(Color.BLACK);
+
+            rendererPacer.setShowGridY(true);
+            rendererPacer.setShowGridX(true);
+            rendererPacer.setGridColor(Color.WHITE);
+            // mRenderer.setShowCustomTextGrid(true);
+
+            rendererPacer.setAntialiasing(true);
+            rendererPacer.setPanEnabled(true, false);
+            rendererPacer.setZoomEnabled(true, false);
+            rendererPacer.setZoomButtonsVisible(false);
+            rendererPacer.setXLabelsColor(Color.WHITE);
+            rendererPacer.setYLabelsColor(0, Color.WHITE);
+            rendererPacer.setXLabelsAlign(Align.CENTER);
+            rendererPacer.setXLabelsPadding(10);
+            rendererPacer.setXLabelsAngle(-30.0f);
+            rendererPacer.setYLabelsAlign(Align.RIGHT);
+            rendererPacer.setPointSize(3);
+            rendererPacer.setInScroll(true);
+            // rendererPacer.setShowLegend(false);
+            rendererPacer.setMargins(new int[]{50, 150, 10, 50});
+
+            rendererPacer.addSeriesRenderer(currentRendererPacer);
+        }
+    }
+
+    private class BreathPaceGenerator extends AsyncTask<Void, Double, Void> {
+
+        private double f = 0.1; // sinus wave frequency in Hz
+        private int fs = 10; // sampling frequency in Hz
+        private int i = 0;
+        private int j = 0;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //TODO vorbereiten
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            double samplingInterval = fs / f;
+            while (!isCancelled()) {
+                double angle = (2.0 * Math.PI * i++) / samplingInterval;
+                publishProgress(Math.sin(angle));
+                try {
+                    Thread.sleep(1 / fs);
+                } catch (InterruptedException e) {
+                    Log.i(TAG, "Breath Pacer stopped!");
+                    return null;
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Double... values) {
+            for (double value : values) {
+                while (seriesPacer.getItemCount() > fs * 2) {
+                    seriesPacer.remove(0);
+                }
+                seriesPacer.add(j++, value);
+            }
+            rendererPacer.setXAxisMin(seriesPacer.getMinX());
+            rendererPacer.setXAxisMax(seriesPacer.getMaxX());
+            pacerChart.repaint();
+            pacerChart.zoomReset();
         }
     }
 }

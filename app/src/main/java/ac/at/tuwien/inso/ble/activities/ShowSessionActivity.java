@@ -230,41 +230,19 @@ public class ShowSessionActivity extends Activity implements AdapterView.OnItemS
      */
     private void plot(String label, List<Double> values) {
 
-        Pair<Double, Double> minmax = getBoundaries(values);
         series.clearSeriesValues();
         for (int i = 0; i < values.size(); i++) {
             series.add(i, values.get(i));
         }
         renderer.setXAxisMin(0);
         renderer.setXAxisMax(values.size());
-        renderer.setYAxisMin(minmax.first);
-        renderer.setYAxisMax(minmax.second);
-        renderer.setPanLimits(new double[]{0, values.size(), minmax.first, minmax.second});
+        renderer.setYAxisMin(series.getMinY());
+        renderer.setYAxisMax(series.getMaxY());
+        renderer.setPanLimits(new double[]{0, values.size(), series.getMinY(), series.getMaxY()});
         renderer.setYTitle(label);
 
         chart.invalidate();
         //TODO: Datum passend ausgeben (wie?)
-    }
-
-    /**
-     * Gives the Boundaries according to min/max of all values rounded to the next multiple of 10.
-     * Used for scaling the plot.
-     *
-     * @param values
-     * @return
-     */
-    private Pair<Double, Double> getBoundaries(List<Double> values) {
-        Double min = Double.MAX_VALUE;
-        Double max = Double.MIN_VALUE;
-        for (Double number : values) {
-            if (number.intValue() < min.intValue()) {
-                min = number;
-            }
-            if (number.intValue() > max.intValue()) {
-                max = number;
-            }
-        }
-        return new Pair<Double, Double>(Math.floor(min.doubleValue() / 10) * 10, Math.ceil(max.doubleValue() / 10) * 10);
     }
 
     @Override

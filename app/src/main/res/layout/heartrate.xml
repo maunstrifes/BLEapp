@@ -37,8 +37,31 @@
     <LinearLayout
         android:id="@+id/chart"
         android:layout_width="fill_parent"
-        android:layout_height="0dip"
+        android:layout_height="300dip"
         android:layout_weight="1"
         android:orientation="horizontal" />
+
+    <LinearLayout
+        android:id="@+id/pacer"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/pacer_chart"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal" />
+
+        <Button
+            android:id="@+id/pacer_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/pacer_start" />
+
+    </LinearLayout>
 
 </LinearLayout>
