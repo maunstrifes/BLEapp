@@ -48,18 +48,17 @@
         android:layout_weight="1"
         android:orientation="horizontal">
 
-        <LinearLayout
-            android:id="@+id/pacer_chart"
-            android:layout_width="fill_parent"
+        <ImageView
+            android:id="@+id/pacer_view"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="horizontal" />
+            android:src="@drawable/breath_pacer" />
 
         <Button
             android:id="@+id/pacer_start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
+            android:layout_gravity="center"
             android:text="@string/pacer_start" />
 
     </LinearLayout>
