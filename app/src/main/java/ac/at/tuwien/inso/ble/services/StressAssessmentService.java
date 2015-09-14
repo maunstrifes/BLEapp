@@ -12,7 +12,7 @@ import android.util.Log;
 import java.util.List;
 
 import ac.at.tuwien.inso.ble.HrvParameters;
-import ac.at.tuwien.inso.ble.utils.Events;
+import ac.at.tuwien.inso.ble.utils.IntentConstants;
 import ac.at.tuwien.inso.ble.utils.LimitedList;
 
 public class StressAssessmentService extends Service {
@@ -31,10 +31,10 @@ public class StressAssessmentService extends Service {
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            final Events action = Events.valueOf(intent.getAction());
-            if (Events.ACTION_HRV_DATA_AVAILABLE.equals(action)) {
+            final IntentConstants action = IntentConstants.valueOf(intent.getAction());
+            if (IntentConstants.ACTION_HRV_DATA_AVAILABLE.equals(action)) {
                 dataReceived((HrvParameters) intent
-                        .getSerializableExtra(Events.HRV_DATA.toString()));
+                        .getSerializableExtra(IntentConstants.HRV_DATA.toString()));
             }
         }
     };
@@ -51,7 +51,7 @@ public class StressAssessmentService extends Service {
     @Override
     public void onCreate() {
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Events.ACTION_HRV_DATA_AVAILABLE.toString());
+        intentFilter.addAction(IntentConstants.ACTION_HRV_DATA_AVAILABLE.toString());
         registerReceiver(broadcastReceiver, intentFilter);
         Log.i(TAG, "started StressAssesmentService");
     }

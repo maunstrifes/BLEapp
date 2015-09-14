@@ -47,10 +47,9 @@ import java.util.Map;
 
 import ac.at.tuwien.inso.ble.HrvParameters;
 import ac.at.tuwien.inso.ble.R;
-import ac.at.tuwien.inso.ble.database.Session;
 import ac.at.tuwien.inso.ble.services.HrvParameterService;
 import ac.at.tuwien.inso.ble.utils.DateHelper;
-import ac.at.tuwien.inso.ble.utils.Events;
+import ac.at.tuwien.inso.ble.utils.IntentConstants;
 
 /**
  * Shows already recorded sessions
@@ -65,9 +64,9 @@ public class ShowSessionActivity extends Activity implements AdapterView.OnItemS
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            final Events action = Events.valueOf(intent.getAction());
-            if (Events.ACTION_HRV_DATA_AVAILABLE.equals(action)) {
-                showHrvParameters((HrvParameters) intent.getSerializableExtra(Events.HRV_DATA.toString()));
+            final IntentConstants action = IntentConstants.valueOf(intent.getAction());
+            if (IntentConstants.ACTION_HRV_DATA_AVAILABLE.equals(action)) {
+                showHrvParameters((HrvParameters) intent.getSerializableExtra(IntentConstants.HRV_DATA.toString()));
             } else {
                 throw new RuntimeException("not implemented");
             }
@@ -124,7 +123,7 @@ public class ShowSessionActivity extends Activity implements AdapterView.OnItemS
 
         // Register for HRV Data
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Events.ACTION_HRV_DATA_AVAILABLE.toString());
+        intentFilter.addAction(IntentConstants.ACTION_HRV_DATA_AVAILABLE.toString());
         registerReceiver(broadcastReceiver, intentFilter);
 
         // Start HrvParameter Service
@@ -211,8 +210,8 @@ public class ShowSessionActivity extends Activity implements AdapterView.OnItemS
      */
     private void sendHrToHrvParameterService() {
         final Intent intent = getIntent();
-        Session session = (Session) intent.getSerializableExtra(AllSessionsActivity.EXTRAS_SESSION);
-        new SessionFileReaderTask().execute(session);
+        long sessionId = intent.getLongExtra(IntentConstants.SESSION_ID.toString(), -1);
+        new SessionFileReaderTask().execute(sessionId);
     }
 
     /**
@@ -270,7 +269,7 @@ public class ShowSessionActivity extends Activity implements AdapterView.OnItemS
     /**
      * Reads the Session file async and then broadcasts and plots the HR data
      */
-    private class SessionFileReaderTask extends AsyncTask<Session, Void, List<Double>> {
+    private class SessionFileReaderTask extends AsyncTask<Long, Void, List<Double>> {
 
         ProgressDialog asyncDialog = new ProgressDialog(ShowSessionActivity.this);
 
@@ -281,10 +280,10 @@ public class ShowSessionActivity extends Activity implements AdapterView.OnItemS
         }
 
         @Override
-        protected List<Double> doInBackground(Session... sessions) {
-            if (sessions.length > 1) throw new RuntimeException("too many sessions, why?");
+        protected List<Double> doInBackground(Long... sessionIds) {
+            if (sessionIds.length > 1) throw new RuntimeException("too many sessions, why?");
             // Read data from session
-            Pair<List<Date>, List<Double>> result = readFile(sessions[0]);
+            Pair<List<Date>, List<Double>> result = readFile(sessionIds[0]);
             return result.second;
         }
 
@@ -296,8 +295,8 @@ public class ShowSessionActivity extends Activity implements AdapterView.OnItemS
         protected void onPostExecute(List<Double> values) {
             valueMap.put(getString(R.string.heart_rate), values);
             for (Number heartRate : values) {
-                final Intent intent = new Intent(Events.ACTION_DATA_AVAILABLE.toString());
-                intent.putExtra(Events.HR_DATA.toString(), String.valueOf(heartRate));
+                final Intent intent = new Intent(IntentConstants.ACTION_DATA_AVAILABLE.toString());
+                intent.putExtra(IntentConstants.HR_DATA.toString(), String.valueOf(heartRate));
                 sendBroadcast(intent);
             }
             plot(getString(R.string.heart_rate), values);
@@ -309,9 +308,9 @@ public class ShowSessionActivity extends Activity implements AdapterView.OnItemS
          *
          * @return
          */
-        private Pair<List<Date>, List<Double>> readFile(Session session) {
+        private Pair<List<Date>, List<Double>> readFile(long sessionId) {
             File file = new File(Environment.getExternalStorageDirectory()
-                    .getPath() + "/" + session.getId() + ".csv");
+                    .getPath() + "/" + sessionId + ".csv");
             List<Double> valueList = new ArrayList<Double>(100);
             List<Date> dateList = new ArrayList<Date>(100);
             try {

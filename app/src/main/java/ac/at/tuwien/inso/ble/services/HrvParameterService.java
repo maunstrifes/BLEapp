@@ -15,7 +15,7 @@ import java.util.List;
 
 import ac.at.tuwien.inso.ble.HrvParameters;
 import ac.at.tuwien.inso.ble.utils.BaseCalculator;
-import ac.at.tuwien.inso.ble.utils.Events;
+import ac.at.tuwien.inso.ble.utils.IntentConstants;
 import ac.at.tuwien.inso.ble.utils.LimitedList;
 
 public class HrvParameterService extends Service {
@@ -33,10 +33,10 @@ public class HrvParameterService extends Service {
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            final Events action = Events.valueOf(intent.getAction());
-            if (Events.ACTION_DATA_AVAILABLE.equals(action)) {
+            final IntentConstants action = IntentConstants.valueOf(intent.getAction());
+            if (IntentConstants.ACTION_DATA_AVAILABLE.equals(action)) {
                 writeData(intent
-                        .getStringExtra(Events.HR_DATA.toString()));
+                        .getStringExtra(IntentConstants.HR_DATA.toString()));
             }
         }
     };
@@ -47,7 +47,7 @@ public class HrvParameterService extends Service {
     @Override
     public void onCreate() {
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Events.ACTION_DATA_AVAILABLE.toString());
+        intentFilter.addAction(IntentConstants.ACTION_DATA_AVAILABLE.toString());
         registerReceiver(broadcastReceiver, intentFilter);
         Log.i(TAG, "started HrvParameterService");
     }
@@ -94,8 +94,8 @@ public class HrvParameterService extends Service {
         }
 
         protected void onPostExecute(HrvParameters result) {
-            final Intent intent = new Intent(Events.ACTION_HRV_DATA_AVAILABLE.toString());
-            intent.putExtra(Events.HRV_DATA.toString(), result);
+            final Intent intent = new Intent(IntentConstants.ACTION_HRV_DATA_AVAILABLE.toString());
+            intent.putExtra(IntentConstants.HRV_DATA.toString(), result);
             sendBroadcast(intent);
         }
     }

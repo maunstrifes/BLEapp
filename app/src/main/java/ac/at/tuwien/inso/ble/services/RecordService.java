@@ -16,27 +16,31 @@ import java.util.Date;
 import ac.at.tuwien.inso.ble.database.Session;
 import ac.at.tuwien.inso.ble.database.SessionDataSource;
 import ac.at.tuwien.inso.ble.utils.DateHelper;
-import ac.at.tuwien.inso.ble.utils.Events;
 import ac.at.tuwien.inso.ble.utils.FileHelper;
+import ac.at.tuwien.inso.ble.utils.IntentConstants;
 
 public class RecordService extends Service {
 
     private final static String TAG = RecordService.class.getSimpleName();
     private final IBinder binder = new LocalBinder();
+    private long sessionId;
     private SessionDataSource datasource;
     private BufferedWriter writer;
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            final Events action = Events.valueOf(intent.getAction());
-            if (Events.ACTION_DATA_AVAILABLE.equals(action)) {
+            final IntentConstants action = IntentConstants.valueOf(intent.getAction());
+            if (IntentConstants.ACTION_DATA_AVAILABLE.equals(action)) {
                 writeData(intent
-                        .getStringExtra(Events.HR_DATA.toString()));
+                        .getStringExtra(IntentConstants.HR_DATA.toString()));
             }
         }
     };
-
     public RecordService() {
+    }
+
+    public long getSessionId() {
+        return sessionId;
     }
 
     @Override
@@ -45,9 +49,10 @@ public class RecordService extends Service {
         datasource = new SessionDataSource(this);
         datasource.open();
         Session session = datasource.createSession(new Date().getTime());
+        sessionId = session.getId();
         writer = FileHelper.createFile(session);
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Events.ACTION_DATA_AVAILABLE.toString());
+        intentFilter.addAction(IntentConstants.ACTION_DATA_AVAILABLE.toString());
         registerReceiver(broadcastReceiver, intentFilter);
         Log.i(TAG, "started, session created");
     }

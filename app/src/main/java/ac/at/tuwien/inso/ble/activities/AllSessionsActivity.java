@@ -16,10 +16,10 @@ import ac.at.tuwien.inso.ble.R;
 import ac.at.tuwien.inso.ble.adapter.SessionAdapter;
 import ac.at.tuwien.inso.ble.database.Session;
 import ac.at.tuwien.inso.ble.database.SessionDataSource;
+import ac.at.tuwien.inso.ble.utils.IntentConstants;
 
 public class AllSessionsActivity extends ListActivity {
 
-    public static final String EXTRAS_SESSION = "SESSION";
     private final static String TAG = AllSessionsActivity.class
             .getSimpleName();
     private static final int CONTEXT_MENU_DELETE_ITEM = 10001;
@@ -43,7 +43,7 @@ public class AllSessionsActivity extends ListActivity {
         Session session = (Session) getListView().getItemAtPosition(position);
 
         final Intent intent = new Intent(this, ShowSessionActivity.class);
-        intent.putExtra(EXTRAS_SESSION, session);
+        intent.putExtra(IntentConstants.SESSION_ID.toString(), session.getId());
         startActivity(intent);
     }
 
