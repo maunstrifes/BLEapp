@@ -13,6 +13,7 @@ import ac.at.tuwien.inso.ble.R;
 public class MainActivity extends Activity implements View.OnClickListener {
 
     private Button btnSessionStart;
+    private Button btnBaselineStart;
     private Button btnAllSessions;
 
     @Override
@@ -22,6 +23,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         btnSessionStart = (Button) findViewById(R.id.session_start);
         btnSessionStart.setOnClickListener(this);
+        btnBaselineStart = (Button) findViewById(R.id.baseline_start);
+        btnBaselineStart.setOnClickListener(this);
         btnAllSessions = (Button) findViewById(R.id.all_sessions);
         btnAllSessions.setOnClickListener(this);
     }
@@ -48,11 +51,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View view) {
 
-        if(view.equals(btnSessionStart)) {
+        if (view.equals(btnSessionStart)) {
             Intent intent = new Intent(this, DeviceScanActivity.class);
             startActivity(intent);
-        }
-        if(view.equals(btnAllSessions)){
+        } else if (view.equals(btnBaselineStart)) {
+            Intent intent = new Intent(this, BaselineRecordActivity.class);
+            startActivity(intent);
+        } else if (view.equals(btnAllSessions)) {
             Intent intent = new Intent(this, AllSessionsActivity.class);
             startActivity(intent);
         }

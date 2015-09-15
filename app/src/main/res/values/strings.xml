@@ -30,6 +30,7 @@
 
     <!-- Main Activity -->
     <string name="session_start">Start Session</string>
+    <string name="baseline_start">Record Baseline</string>
     <string name="pacer_start">Start Breath Pacer</string>
     <string name="pacer_stop">Stop Breath Pacer</string>
 

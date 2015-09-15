@@ -43,6 +43,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import ac.at.tuwien.inso.ble.R;
+import ac.at.tuwien.inso.ble.utils.IntentConstants;
 
 /**
  * Activity for scanning and displaying available Bluetooth LE devices.
@@ -55,6 +56,7 @@ public class DeviceScanActivity extends ListActivity {
     private BluetoothAdapter adapter;
     private boolean scanning;
     private Handler handler;
+
     /**
      * Device scan callback.
      */
@@ -189,8 +191,8 @@ public class DeviceScanActivity extends ListActivity {
         final BluetoothDevice device = deviceListAdapter.getDevice(position);
         if (device == null) return;
         final Intent intent = new Intent(this, DeviceControlActivity.class);
-        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
-        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+        intent.putExtra(IntentConstants.DEVICE_NAME.toString(), device.getName());
+        intent.putExtra(IntentConstants.DEVICE_ADDRESS.toString(), device.getAddress());
         if (scanning) {
             adapter.stopLeScan(scanCallback);
             scanning = false;
