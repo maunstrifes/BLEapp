@@ -18,7 +18,7 @@ public class BLESQLLiteHelper extends SQLiteOpenHelper {
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_TIME = "time";
     // Database creation sql statement
-    private static final String DATABASE_CREATE = "create table "
+    private static final String CREATE_SESSION = "create table "
             + TABLE_SESSION + "(" + COLUMN_ID
             + " integer primary key autoincrement, "
             + COLUMN_TIME + " long);";
@@ -32,7 +32,7 @@ public class BLESQLLiteHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase database) {
 
-        database.execSQL(DATABASE_CREATE);
+        database.execSQL(CREATE_SESSION);
         Log.i("WICHTIG", "table created");
     }
 

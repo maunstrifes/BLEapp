@@ -20,11 +20,16 @@
 
 package ac.at.tuwien.inso.ble.activities;
 
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.IBinder;
 import android.view.MenuItem;
 
 import ac.at.tuwien.inso.ble.R;
+import ac.at.tuwien.inso.ble.services.BaselineService;
 import ac.at.tuwien.inso.ble.utils.IntentConstants;
 
 /**
@@ -32,29 +37,71 @@ import ac.at.tuwien.inso.ble.utils.IntentConstants;
  */
 public class BaselineRecordActivity extends AbstractHrReceivingActivity {
 
+    // Baseline length in ms
+    private static final long BASELINE_TIME = 5 * 60 * 1000; // 5min
+
+
+    protected BaselineService mBaselineService;
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName,
+                                       IBinder service) {
+            mBaselineService = ((BaselineService.LocalBinder) service)
+                    .getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBaselineService = null;
+        }
+    };
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         setContentView(R.layout.record_baseline);
 
         super.onCreate(savedInstanceState);
+
+        // start BaselineService
+        Intent gattServiceIntent = new Intent(this, BaselineService.class);
+        startService(gattServiceIntent);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+
+        // end baseline recording after BASELINE_TIME
+        new CountDownTimer(BASELINE_TIME, 1000) {
+
+            @Override
+            public void onTick(long msRemaining) {
+                // TODO: verbleibende Zeit anzeigen
+            }
+
+            @Override
+            public void onFinish() {
+                stopBaseline();
+            }
+        }.start();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_stop_session:
-                final Intent intent = new Intent(this, ShowSessionActivity.class); //TODO: richtige activity, die die baseline speichert
-                intent.putExtra(IntentConstants.SESSION_ID.toString(), mBluetoothLeService.getRecordService().getSessionId());
-//                mBluetoothLeService.getRecordService().writeBaseline();
-                mBluetoothLeService.disconnect();
-                startActivity(intent);
-                //TODO: weiter zur korrekten Activity
+                stopBaseline();
                 return true;
             case android.R.id.home:
                 onBackPressed();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void stopBaseline() {
+        final Intent intent = new Intent(this, ShowSessionActivity.class);
+        intent.putExtra(IntentConstants.SESSION_ID.toString(), mBluetoothLeService.getRecordService().getSessionId());
+        mBaselineService.saveBaseline();
+        mBluetoothLeService.disconnect();
+        mBluetoothLeService.close();
+        startActivity(intent);
     }
 }
