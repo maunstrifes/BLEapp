@@ -36,5 +36,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="@string/all_sessions" />
+
+    <!-- TODO: Baseline Parameter Anzeige -->
     </LinearLayout>
 </RelativeLayout>

@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 
 import ac.at.tuwien.inso.ble.R;
+import ac.at.tuwien.inso.ble.utils.IntentConstants;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
@@ -45,8 +46,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     /**
      * Start the session by connecting to device
-     *
-     * @param view
      */
     @Override
     public void onClick(View view) {
@@ -55,7 +54,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
             Intent intent = new Intent(this, DeviceScanActivity.class);
             startActivity(intent);
         } else if (view.equals(btnBaselineStart)) {
-            Intent intent = new Intent(this, BaselineRecordActivity.class);
+            Intent intent = new Intent(this, DeviceScanActivity.class);
+            intent.putExtra(IntentConstants.IS_BASELINE.toString(), true);
             startActivity(intent);
         } else if (view.equals(btnAllSessions)) {
             Intent intent = new Intent(this, AllSessionsActivity.class);

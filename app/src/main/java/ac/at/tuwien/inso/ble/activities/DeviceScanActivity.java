@@ -55,6 +55,7 @@ public class DeviceScanActivity extends ListActivity {
     private DeviceListAdapter deviceListAdapter;
     private BluetoothAdapter adapter;
     private boolean scanning;
+    private boolean isBaseline;
     private Handler handler;
 
     /**
@@ -77,8 +78,6 @@ public class DeviceScanActivity extends ListActivity {
 
     /**
      * Create: Check if BLE is supported, initialization
-     *
-     * @param savedInstanceState
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -100,6 +99,8 @@ public class DeviceScanActivity extends ListActivity {
             finish();
             return;
         }
+
+        isBaseline = getIntent().getBooleanExtra(IntentConstants.IS_BASELINE.toString(), false);
     }
 
     @Override
@@ -140,10 +141,8 @@ public class DeviceScanActivity extends ListActivity {
         super.onResume();
 
         if (!adapter.isEnabled()) {
-            if (!adapter.isEnabled()) {
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            }
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
         deviceListAdapter = new DeviceListAdapter();
@@ -153,10 +152,6 @@ public class DeviceScanActivity extends ListActivity {
 
     /**
      * Exit if user canceled Bluetooth request.
-     *
-     * @param requestCode
-     * @param resultCode
-     * @param data
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -180,17 +175,13 @@ public class DeviceScanActivity extends ListActivity {
 
     /**
      * User chose a device: stop scanning and go to next Activity
-     *
-     * @param l
-     * @param v
-     * @param position
-     * @param id
      */
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         final BluetoothDevice device = deviceListAdapter.getDevice(position);
         if (device == null) return;
-        final Intent intent = new Intent(this, DeviceControlActivity.class);
+        Class<? extends AbstractHrReceivingActivity> intentClass = isBaseline ? BaselineRecordActivity.class : DeviceControlActivity.class;
+        final Intent intent = new Intent(this, intentClass);
         intent.putExtra(IntentConstants.DEVICE_NAME.toString(), device.getName());
         intent.putExtra(IntentConstants.DEVICE_ADDRESS.toString(), device.getAddress());
         if (scanning) {

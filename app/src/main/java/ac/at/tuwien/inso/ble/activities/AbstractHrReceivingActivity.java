@@ -31,7 +31,7 @@ import ac.at.tuwien.inso.ble.services.BluetoothLeService;
 import ac.at.tuwien.inso.ble.utils.IntentConstants;
 
 /**
- * Created by manu on 25.08.2015.
+ * Abstract class for Activities that connect to the BLE sensor and receive the heart rate.
  */
 public class AbstractHrReceivingActivity extends Activity {
 
@@ -81,6 +81,7 @@ public class AbstractHrReceivingActivity extends Activity {
                 clearUI();
             } else if (IntentConstants.ACTION_GATT_SERVICES_DISCOVERED
                     .equals(action)) {
+                //TODO: what to do?
                 // Show all the supported services and characteristics on the
                 // user interface.
 //                displayGattServices(mBluetoothLeService
@@ -243,7 +244,7 @@ public class AbstractHrReceivingActivity extends Activity {
             if (data != null) {
 
                 long time = (new Date()).getTime();
-                int dataElement = Integer.parseInt(data);
+                double dataElement = Double.parseDouble(data);
                 mCurrentSeries.add(time, dataElement);
                 // Storing last 600 only - should average...
                 while (mCurrentSeries.getItemCount() > 60 * 10) {
@@ -273,6 +274,7 @@ public class AbstractHrReceivingActivity extends Activity {
             }
         } catch (Exception e) {
             Log.e(TAG, "Exception while parsing: " + data);
+            e.printStackTrace();
         }
     }
 }

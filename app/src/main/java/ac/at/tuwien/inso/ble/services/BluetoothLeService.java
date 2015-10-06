@@ -65,6 +65,7 @@ public class BluetoothLeService extends Service {
      * Service for recording the heart rate
      */
     private RecordService recordService;
+    private boolean recordBound = false;
     private final ServiceConnection recordServiceConnection = new ServiceConnection() {
 
         @Override
@@ -72,17 +73,21 @@ public class BluetoothLeService extends Service {
                                        IBinder service) {
             recordService = ((RecordService.LocalBinder) service)
                     .getService();
+            recordBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
+
             recordService = null;
+            recordBound = false;
         }
     };
     /**
      * Service for calculating the HRV parameters
      */
     private HrvParameterService hrvParameterService;
+    private boolean hrvParameterBound = false;
     private final ServiceConnection hrvParameterServiceConnection = new ServiceConnection() {
 
         @Override
@@ -90,11 +95,13 @@ public class BluetoothLeService extends Service {
                                        IBinder service) {
             hrvParameterService = ((HrvParameterService.LocalBinder) service)
                     .getService();
+            hrvParameterBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             hrvParameterService = null;
+            hrvParameterBound = false;
         }
     };
     private BluetoothAdapter bluetoothAdapter;
@@ -259,11 +266,7 @@ public class BluetoothLeService extends Service {
                 && bluetoothGatt != null) {
             Log.d(TAG,
                     "Trying to use an existing bluetoothGatt for connection.");
-            if (bluetoothGatt.connect()) {
-                return true;
-            } else {
-                return false;
-            }
+            return bluetoothGatt.connect();
         }
 
         // New device
@@ -301,7 +304,14 @@ public class BluetoothLeService extends Service {
             return;
         }
         stopForeground(true);
-        unbindService(recordServiceConnection);
+        if (recordBound) {
+            unbindService(recordServiceConnection);
+            recordBound = false;
+        }
+        if (hrvParameterBound) {
+            unbindService(hrvParameterServiceConnection);
+            hrvParameterBound = false;
+        }
         bluetoothGatt.close();
         bluetoothGatt = null;
         stopSelf();
@@ -377,8 +387,6 @@ public class BluetoothLeService extends Service {
             broadcastUpdate(IntentConstants.ACTION_DATA_AVAILABLE.toString(), characteristic);
         }
     }
-
-    ;
 
     public class LocalBinder extends Binder {
         public BluetoothLeService getService() {

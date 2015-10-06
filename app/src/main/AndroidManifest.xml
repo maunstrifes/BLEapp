@@ -64,6 +64,10 @@ limitations under the License.
             android:name=".activities.DeviceControlActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:launchMode="singleTask" />
+        <activity
+            android:name=".activities.BaselineRecordActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:launchMode="singleTask" />
 
         <service
             android:name=".services.BluetoothLeService"
@@ -72,9 +76,11 @@ limitations under the License.
             android:name=".services.HrvParameterService"
             android:enabled="true" />
         <service
+            android:name=".services.BaselineService"
+            android:enabled="true" />
+        <service
             android:name=".services.RecordService"
-            android:enabled="true"
-            android:exported="true" />
+            android:enabled="true" />
 
         <activity
             android:name=".activities.AllSessionsActivity"
@@ -96,7 +102,7 @@ limitations under the License.
         <service
             android:name=".services.StressAssessmentService"
             android:enabled="true"
-            android:exported="false"></service>
+            android:exported="false" />
     </application>
 
 </manifest>

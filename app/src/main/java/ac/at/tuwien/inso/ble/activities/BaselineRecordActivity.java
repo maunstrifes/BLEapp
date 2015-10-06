@@ -41,7 +41,8 @@ public class BaselineRecordActivity extends AbstractHrReceivingActivity {
     private static final long BASELINE_TIME = 5 * 60 * 1000; // 5min
 
 
-    protected BaselineService mBaselineService;
+    private BaselineService mBaselineService;
+    private boolean baselineBound = false;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
         @Override
@@ -49,11 +50,13 @@ public class BaselineRecordActivity extends AbstractHrReceivingActivity {
                                        IBinder service) {
             mBaselineService = ((BaselineService.LocalBinder) service)
                     .getService();
+            baselineBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             mBaselineService = null;
+            baselineBound = false;
         }
     };
     @Override
@@ -100,6 +103,9 @@ public class BaselineRecordActivity extends AbstractHrReceivingActivity {
         final Intent intent = new Intent(this, ShowSessionActivity.class);
         intent.putExtra(IntentConstants.SESSION_ID.toString(), mBluetoothLeService.getRecordService().getSessionId());
         mBaselineService.saveBaseline();
+        if (baselineBound) {
+            unbindService(mServiceConnection);
+        }
         mBluetoothLeService.disconnect();
         mBluetoothLeService.close();
         startActivity(intent);

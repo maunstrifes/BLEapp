@@ -1,7 +1,7 @@
 package ac.at.tuwien.inso.ble.utils;
 
 /**
- * Created by manu on 03.04.2015.
+ * Constants for Intents
  */
 public enum IntentConstants {
 
@@ -11,6 +11,9 @@ public enum IntentConstants {
     ACTION_GATT_SERVICES_DISCOVERED,
     ACTION_DATA_AVAILABLE,
     ACTION_HRV_DATA_AVAILABLE,
+
+    // Flags
+    IS_BASELINE,
 
     // Extra Data
     HR_DATA,
