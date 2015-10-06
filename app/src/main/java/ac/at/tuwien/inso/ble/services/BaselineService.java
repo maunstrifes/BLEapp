@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ac.at.tuwien.inso.ble.HrvParameters;
-import ac.at.tuwien.inso.ble.utils.FileHelper;
+import ac.at.tuwien.inso.ble.utils.Baseline;
 import ac.at.tuwien.inso.ble.utils.IntentConstants;
 
 public class BaselineService extends Service {
@@ -72,7 +72,8 @@ public class BaselineService extends Service {
         Log.i(TAG, "RMSSD: " + meanHr);
         Log.i(TAG, "pNN50: " + meanHr);
 
-        FileHelper.writeBaseline(new HrvParameters(meanHr, sdnn, rmssd, pnn50));
+        Baseline.getInstance().setBaseline(new HrvParameters(meanHr, sdnn, rmssd, pnn50));
+        Baseline.getInstance().saveBaseline();
     }
 
     /**

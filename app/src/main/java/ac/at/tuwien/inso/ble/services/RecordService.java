@@ -16,8 +16,8 @@ import java.util.Date;
 import ac.at.tuwien.inso.ble.database.Session;
 import ac.at.tuwien.inso.ble.database.SessionDataSource;
 import ac.at.tuwien.inso.ble.utils.DateHelper;
-import ac.at.tuwien.inso.ble.utils.FileHelper;
 import ac.at.tuwien.inso.ble.utils.IntentConstants;
+import ac.at.tuwien.inso.ble.utils.SessionFileHelper;
 
 public class RecordService extends Service {
 
@@ -50,7 +50,7 @@ public class RecordService extends Service {
         datasource.open();
         Session session = datasource.createSession(new Date().getTime());
         sessionId = session.getId();
-        writer = FileHelper.createFile(session);
+        writer = SessionFileHelper.createFile(session);
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(IntentConstants.ACTION_DATA_AVAILABLE.toString());
         registerReceiver(broadcastReceiver, intentFilter);
@@ -78,7 +78,7 @@ public class RecordService extends Service {
     private void writeData(String heartRate) {
 
         try {
-            writer.append(DateHelper.toString(new Date()) + "," + heartRate);
+            writer.write(DateHelper.toString(new Date()) + "," + heartRate);
             writer.newLine();
 
         } catch (IOException e) {

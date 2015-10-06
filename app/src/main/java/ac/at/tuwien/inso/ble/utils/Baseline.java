@@ -13,7 +13,8 @@ import java.io.IOException;
 import ac.at.tuwien.inso.ble.HrvParameters;
 
 /**
- * Created by manu on 25.08.2015.
+ * Singleton for the Baseline.
+ * Reads baseline from file at creating instance.
  */
 public class Baseline {
     private static final String FILE_NAME = "baseline";
@@ -44,7 +45,7 @@ public class Baseline {
             double pnn50 = Double.parseDouble(reader.readLine());
             params = new HrvParameters(meanHr, sdnn, rmssd, pnn50);
         } catch (FileNotFoundException e) {
-            //TODO: baseline-activity laden
+            //TODO: baseline-activity laden? Vorsicht: wird auch aufgerufen, wenn die Baseline gespeichert wird :/
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
@@ -59,18 +60,31 @@ public class Baseline {
     }
 
     /**
+     * Sets the HRV Parameters of the baseline. To persist saveBaseline() must be called afterwards.
+     *
+     * @param params
+     */
+    public void setBaseline(HrvParameters params) {
+        this.params = params;
+    }
+
+    /**
      * Writes the Baseline file
      */
-    private void saveBaseline() {
+    public void saveBaseline() {
         File file = new File(Environment.getExternalStorageDirectory()
                 .getPath() + "/" + FILE_NAME);
+
         BufferedWriter writer = null;
         try {
-            writer = new BufferedWriter(new FileWriter(file));
-            writer.append(params.getMeanHr() + "\n");
-            writer.append(params.getSdnn() + "\n");
-            writer.append(params.getRmssd() + "\n");
-            writer.append(params.getPnn50() + "\n");
+            writer = new BufferedWriter(new FileWriter(file, false /*append*/));
+            writer.write(String.valueOf(params.getMeanHr()));
+            writer.newLine();
+            writer.write(String.valueOf(params.getSdnn()));
+            writer.newLine();
+            writer.write(String.valueOf(params.getRmssd()));
+            writer.newLine();
+            writer.write(String.valueOf(params.getPnn50()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {

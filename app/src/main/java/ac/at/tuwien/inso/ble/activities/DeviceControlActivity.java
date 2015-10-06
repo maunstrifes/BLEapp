@@ -60,9 +60,7 @@ public class DeviceControlActivity extends AbstractHrReceivingActivity implement
     }
 
     /**
-     * Start the Breath Pacer
-     *
-     * @param view
+     * Starts the Breath Pacer
      */
     @Override
     public void onClick(View view) {
@@ -93,7 +91,6 @@ public class DeviceControlActivity extends AbstractHrReceivingActivity implement
                 intent.putExtra(IntentConstants.SESSION_ID.toString(), mBluetoothLeService.getRecordService().getSessionId());
                 mBluetoothLeService.disconnect();
                 startActivity(intent);
-                //TODO: weiter zur korrekten Activity
                 return true;
             case android.R.id.home:
                 onBackPressed();
