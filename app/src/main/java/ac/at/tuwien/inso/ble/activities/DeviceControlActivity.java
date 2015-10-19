@@ -87,15 +87,24 @@ public class DeviceControlActivity extends AbstractHrReceivingActivity implement
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_stop_session:
-                final Intent intent = new Intent(this, ShowSessionActivity.class);
-                intent.putExtra(IntentConstants.SESSION_ID.toString(), mBluetoothLeService.getRecordService().getSessionId());
-                mBluetoothLeService.disconnect();
-                startActivity(intent);
+                stopSession();
                 return true;
             case android.R.id.home:
                 onBackPressed();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void stopSession() {
+        final Intent intent = new Intent(this, ShowSessionActivity.class);
+        intent.putExtra(IntentConstants.SESSION_ID.toString(), mBluetoothLeService.getRecordService().getSessionId());
+        mBluetoothLeService.disconnect();
+        startActivity(intent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        stopSession();
     }
 }
