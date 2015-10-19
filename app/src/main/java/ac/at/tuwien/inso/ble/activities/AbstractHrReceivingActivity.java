@@ -35,7 +35,7 @@ import ac.at.tuwien.inso.ble.utils.IntentConstants;
  */
 public class AbstractHrReceivingActivity extends Activity {
 
-    private final static String TAG = DeviceControlActivity.class
+    private final static String TAG = AbstractHrReceivingActivity.class
             .getSimpleName();
     // Various UI stuff
     public static boolean currentlyVisible;
@@ -189,6 +189,7 @@ public class AbstractHrReceivingActivity extends Activity {
         getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         gattServiceIntent.putExtra(IntentConstants.DEVICE_ADDRESS.toString(), mDeviceAddress);
+        gattServiceIntent.putExtra(IntentConstants.IS_BASELINE.toString(), this instanceof BaselineRecordActivity);
         startService(gattServiceIntent);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 

@@ -27,6 +27,8 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.view.MenuItem;
+import android.view.WindowManager;
+import android.widget.TextView;
 
 import ac.at.tuwien.inso.ble.R;
 import ac.at.tuwien.inso.ble.services.BaselineService;
@@ -40,7 +42,7 @@ public class BaselineRecordActivity extends AbstractHrReceivingActivity {
     // Baseline length in ms
     private static final long BASELINE_TIME = 5 * 60 * 1000; // 5min
 
-
+    private TextView remainingTimeTxt;
     private BaselineService mBaselineService;
     private boolean baselineBound = false;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -59,12 +61,18 @@ public class BaselineRecordActivity extends AbstractHrReceivingActivity {
             baselineBound = false;
         }
     };
+    private CountDownTimer timer;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         setContentView(R.layout.record_baseline);
-
         super.onCreate(savedInstanceState);
+
+        remainingTimeTxt = (TextView) findViewById(R.id.time_remaining);
+
+        // Don't shut off display
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // start BaselineService
         Intent gattServiceIntent = new Intent(this, BaselineService.class);
@@ -72,11 +80,11 @@ public class BaselineRecordActivity extends AbstractHrReceivingActivity {
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
         // end baseline recording after BASELINE_TIME
-        new CountDownTimer(BASELINE_TIME, 1000) {
+        timer = new CountDownTimer(BASELINE_TIME, 1000) {
 
             @Override
             public void onTick(long msRemaining) {
-                // TODO: verbleibende Zeit anzeigen
+                remainingTimeTxt.setText(msRemaining / 1000 + " seconds");
             }
 
             @Override

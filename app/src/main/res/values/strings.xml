@@ -40,11 +40,12 @@
     <string name="menu_stop">Stop</string>
     <string name="menu_stop_session">Stop Session</string>
     <string name="all_sessions">All Sessions</string>
-    <string name="title_activity_all_sessions">AllSessionsActivity</string>
+    <string name="title_activity_all_sessions">Sessions Overview</string>
+    <string name="ok">OK</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_show_session">ShowSessionActivity</string>
+    <string name="title_activity_show_session">Session</string>
 
     <!-- Context Menu Items -->
     <string name="menu_delete">Delete</string>
@@ -71,5 +72,9 @@
     <!-- other -->
     <string name="loading">loading...</string>
     <string name="show_datapoints">Show datapoints</string>
+
+    <!-- Baseline -->
+    <string name="baseline">Baseline</string>
+    <string name="no_baseline_existing">Please record your baseline at the first start!</string>
 
 </resources>

@@ -21,9 +21,9 @@
 package ac.at.tuwien.inso.ble.services;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.app.TaskStackBuilder;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.UUID;
 
 import ac.at.tuwien.inso.ble.R;
+import ac.at.tuwien.inso.ble.activities.BaselineRecordActivity;
 import ac.at.tuwien.inso.ble.activities.DeviceControlActivity;
 import ac.at.tuwien.inso.ble.utils.IntentConstants;
 
@@ -109,6 +110,7 @@ public class BluetoothLeService extends Service {
     private BluetoothGatt bluetoothGatt;
     private int notificationId = 1;
     private boolean started;
+    private Class<?> callingClass;
 
     public RecordService getRecordService() {
         return recordService;
@@ -126,6 +128,9 @@ public class BluetoothLeService extends Service {
         startBluetooth();
         String deviceAddress = intent.getStringExtra(IntentConstants.DEVICE_ADDRESS.toString());
         connect(deviceAddress);
+
+        boolean isBaseline = intent.getBooleanExtra(IntentConstants.IS_BASELINE.toString(), false);
+        callingClass = isBaseline ? BaselineRecordActivity.class : DeviceControlActivity.class;
 
         showNotification();
 
@@ -178,27 +183,18 @@ public class BluetoothLeService extends Service {
      * Creates and shows the notification for the app to signal that the service is running.
      */
     private void showNotification() {
-        Notification.Builder builder =
-                new Notification.Builder(this)
-                        .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle("BLE Logger")
-                        .setContentText("testtext");
-        builder.setOngoing(true);
-        Intent resultIntent = new Intent(getApplicationContext(), DeviceControlActivity.class);
-        resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        // Adds the back stack for the Intent (but not the Intent itself)
-        stackBuilder.addParentStack(DeviceControlActivity.class);
-        // Adds the Intent that starts the Activity to the top of the stack
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(
-                        0,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
-        builder.setContentIntent(resultPendingIntent);
-        startForeground(notificationId, builder.build());
+        Intent intent = new Intent(getApplicationContext(), callingClass);
+        PendingIntent pIntent = PendingIntent.getActivity(getApplicationContext(), (int) System.currentTimeMillis(), intent, 0);
+
+        Notification myNotification = new Notification.Builder(getApplicationContext())
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText("Some text....") //TODO: ersetzen
+                .setSmallIcon(R.drawable.ic_launcher)
+                .setContentIntent(pIntent)
+                .setOngoing(true).build();
+
+        startForeground(notificationId, myNotification);
     }
 
     private void broadcastUpdate(final String action) {
@@ -300,6 +296,13 @@ public class BluetoothLeService extends Service {
      * Stops the service and releases the bluetooth connections
      */
     public void close() {
+
+        // Close notification
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.cancel(notificationId);
+
+        // Close BT
         if (bluetoothGatt == null) {
             return;
         }
@@ -314,6 +317,7 @@ public class BluetoothLeService extends Service {
         }
         bluetoothGatt.close();
         bluetoothGatt = null;
+
         stopSelf();
     }
 
@@ -338,7 +342,6 @@ public class BluetoothLeService extends Service {
 
         }
     }
-
 
     /**
      * Callback for GATT events

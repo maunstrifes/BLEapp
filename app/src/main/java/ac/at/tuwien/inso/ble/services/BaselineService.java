@@ -72,8 +72,8 @@ public class BaselineService extends Service {
         Log.i(TAG, "RMSSD: " + rmssd);
         Log.i(TAG, "pNN50: " + pnn50);
 
-        Baseline.getInstance().setBaseline(new HrvParameters(meanHr, sdnn, rmssd, pnn50));
-        Baseline.getInstance().saveBaseline();
+        Baseline.getInstance(this).setBaseline(new HrvParameters(meanHr, sdnn, rmssd, pnn50));
+        Baseline.getInstance(this).saveBaseline();
     }
 
     /**

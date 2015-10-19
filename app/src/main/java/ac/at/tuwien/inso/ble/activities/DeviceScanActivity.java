@@ -27,6 +27,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,6 +50,9 @@ import ac.at.tuwien.inso.ble.utils.IntentConstants;
  * Activity for scanning and displaying available Bluetooth LE devices.
  */
 public class DeviceScanActivity extends ListActivity {
+
+    private static final String PREFS_NAME = "BtDevice";
+
     private static final int REQUEST_ENABLE_BT = 1;
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
@@ -57,6 +61,7 @@ public class DeviceScanActivity extends ListActivity {
     private boolean scanning;
     private boolean isBaseline;
     private Handler handler;
+    private String deviceAddress;
 
     /**
      * Device scan callback.
@@ -69,6 +74,10 @@ public class DeviceScanActivity extends ListActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            // connect to device if already connected last time
+                            if (device.getAddress().equals(deviceAddress)) {
+                                connectToDevice(device);
+                            }
                             deviceListAdapter.addDevice(device);
                             deviceListAdapter.notifyDataSetChanged();
                         }
@@ -101,6 +110,9 @@ public class DeviceScanActivity extends ListActivity {
         }
 
         isBaseline = getIntent().getBooleanExtra(IntentConstants.IS_BASELINE.toString(), false);
+
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        deviceAddress = settings.getString(IntentConstants.DEVICE_ADDRESS.toString(), null);
     }
 
     @Override
@@ -179,15 +191,28 @@ public class DeviceScanActivity extends ListActivity {
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         final BluetoothDevice device = deviceListAdapter.getDevice(position);
+        connectToDevice(device);
+    }
+
+    private void connectToDevice(BluetoothDevice device) {
         if (device == null) return;
-        Class<? extends AbstractHrReceivingActivity> intentClass = isBaseline ? BaselineRecordActivity.class : DeviceControlActivity.class;
-        final Intent intent = new Intent(this, intentClass);
-        intent.putExtra(IntentConstants.DEVICE_NAME.toString(), device.getName());
-        intent.putExtra(IntentConstants.DEVICE_ADDRESS.toString(), device.getAddress());
+
+        // Stop scanning
         if (scanning) {
             adapter.stopLeScan(scanCallback);
             scanning = false;
         }
+
+        // Save device
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(IntentConstants.DEVICE_ADDRESS.toString(), device.getAddress());
+        editor.commit();
+        // Connect & start recording
+        Class<? extends AbstractHrReceivingActivity> intentClass = isBaseline ? BaselineRecordActivity.class : DeviceControlActivity.class;
+        final Intent intent = new Intent(this, intentClass);
+        intent.putExtra(IntentConstants.DEVICE_NAME.toString(), device.getName());
+        intent.putExtra(IntentConstants.DEVICE_ADDRESS.toString(), device.getAddress());
         startActivity(intent);
     }
 
