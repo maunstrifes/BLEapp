@@ -45,7 +45,7 @@ public class BaselineRecordActivity extends AbstractHrReceivingActivity {
     private TextView remainingTimeTxt;
     private BaselineService mBaselineService;
     private boolean baselineBound = false;
-    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+    private final ServiceConnection baselineServiceConnection = new ServiceConnection() {
 
         @Override
         public void onServiceConnected(ComponentName componentName,
@@ -61,15 +61,13 @@ public class BaselineRecordActivity extends AbstractHrReceivingActivity {
             baselineBound = false;
         }
     };
-    private CountDownTimer timer;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         setContentView(R.layout.record_baseline);
-        super.onCreate(savedInstanceState);
-
         remainingTimeTxt = (TextView) findViewById(R.id.time_remaining);
+        super.onCreate(savedInstanceState);
 
         // Don't shut off display
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -77,10 +75,10 @@ public class BaselineRecordActivity extends AbstractHrReceivingActivity {
         // start BaselineService
         Intent gattServiceIntent = new Intent(this, BaselineService.class);
         startService(gattServiceIntent);
-        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+        bindService(gattServiceIntent, baselineServiceConnection, BIND_AUTO_CREATE);
 
         // end baseline recording after BASELINE_TIME
-        timer = new CountDownTimer(BASELINE_TIME, 1000) {
+        CountDownTimer timer = new CountDownTimer(BASELINE_TIME, 1000) {
 
             @Override
             public void onTick(long msRemaining) {
@@ -92,6 +90,15 @@ public class BaselineRecordActivity extends AbstractHrReceivingActivity {
                 stopBaseline();
             }
         }.start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (baselineBound) {
+            unbindService(baselineServiceConnection);
+            baselineBound = false;
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -112,7 +119,7 @@ public class BaselineRecordActivity extends AbstractHrReceivingActivity {
         intent.putExtra(IntentConstants.SESSION_ID.toString(), mBluetoothLeService.getRecordService().getSessionId());
         mBaselineService.saveBaseline();
         if (baselineBound) {
-            unbindService(mServiceConnection);
+            unbindService(baselineServiceConnection);
         }
         mBluetoothLeService.disconnect();
         mBluetoothLeService.close();

@@ -60,13 +60,11 @@ limitations under the License.
         <activity
             android:name=".activities.DeviceControlActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:launchMode="singleTask"
-            android:noHistory="true" />
+            android:launchMode="singleTask" />
         <activity
             android:name=".activities.BaselineRecordActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:launchMode="singleTask"
-            android:noHistory="true" />
+            android:launchMode="singleTask" />
 
         <service
             android:name=".services.BluetoothLeService"

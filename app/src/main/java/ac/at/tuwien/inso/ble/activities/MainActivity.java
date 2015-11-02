@@ -7,8 +7,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
+import java.text.DecimalFormat;
+
+import ac.at.tuwien.inso.ble.HrvParameters;
 import ac.at.tuwien.inso.ble.R;
+import ac.at.tuwien.inso.ble.utils.Baseline;
 import ac.at.tuwien.inso.ble.utils.IntentConstants;
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -16,6 +21,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Button btnSessionStart;
     private Button btnBaselineStart;
     private Button btnAllSessions;
+    private TextView baselineParams;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +34,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
         btnBaselineStart.setOnClickListener(this);
         btnAllSessions = (Button) findViewById(R.id.all_sessions);
         btnAllSessions.setOnClickListener(this);
+        baselineParams = (TextView) findViewById(R.id.baseline_params);
+        setBaselineParamsTxt();
+    }
+
+    private void setBaselineParamsTxt() {
+        Baseline baseline = Baseline.getInstance(this);
+        HrvParameters params = baseline.getParams();
+        if (params != null) {
+            DecimalFormat df = new DecimalFormat("#.##");
+            String text = getString(R.string.avg_heart_rate) + ": " + df.format(params.getMeanHr()) + " bpm\n";
+            text += getString(R.string.sdnn) + ": " + df.format(params.getSdnn()) + "\n";
+            text += getString(R.string.rmssd) + ": " + df.format(params.getRmssd()) + "\n";
+            text += getString(R.string.pnn50) + ": " + df.format(params.getPnn50()) + " %\n";
+            baselineParams.setText(text);
+        }
     }
 
 

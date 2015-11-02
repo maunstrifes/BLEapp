@@ -184,10 +184,12 @@ public class BluetoothLeService extends Service {
      */
     private void showNotification() {
 
-        Intent intent = new Intent(getApplicationContext(), callingClass);
+        Intent intent = new Intent(this, callingClass);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pIntent = PendingIntent.getActivity(getApplicationContext(), (int) System.currentTimeMillis(), intent, 0);
 
-        Notification myNotification = new Notification.Builder(getApplicationContext())
+        Notification myNotification = new Notification.Builder(this)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText("Some text....") //TODO: ersetzen
                 .setSmallIcon(R.drawable.ic_launcher)
@@ -315,8 +317,11 @@ public class BluetoothLeService extends Service {
             unbindService(hrvParameterServiceConnection);
             hrvParameterBound = false;
         }
-        bluetoothGatt.close();
-        bluetoothGatt = null;
+
+        if (bluetoothGatt != null) {
+            bluetoothGatt.close();
+            bluetoothGatt = null;
+        }
 
         stopSelf();
     }

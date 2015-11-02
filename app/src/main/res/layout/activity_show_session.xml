@@ -22,11 +22,18 @@
         android:onClick="onCheckboxClicked"
         android:text="@string/show_datapoints" />
 
+    <TextView
+        android:id="@+id/hrv_params"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/params_spinner"
+        android:text="bla" />
+
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/chart"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/params_spinner"
     android:orientation="vertical"
         android:paddingTop="@dimen/activity_vertical_margin"

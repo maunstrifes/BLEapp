@@ -40,7 +40,7 @@ public class AbstractHrReceivingActivity extends Activity {
     // Various UI stuff
     public static boolean currentlyVisible;
     protected BluetoothLeService mBluetoothLeService;
-    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+    private final ServiceConnection bleServiceConnection = new ServiceConnection() {
 
         @Override
         public void onServiceConnected(ComponentName componentName,
@@ -191,7 +191,7 @@ public class AbstractHrReceivingActivity extends Activity {
         gattServiceIntent.putExtra(IntentConstants.DEVICE_ADDRESS.toString(), mDeviceAddress);
         gattServiceIntent.putExtra(IntentConstants.IS_BASELINE.toString(), this instanceof BaselineRecordActivity);
         startService(gattServiceIntent);
-        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+        bindService(gattServiceIntent, bleServiceConnection, BIND_AUTO_CREATE);
 
         if (mChart == null) {
             initChart();
@@ -202,6 +202,8 @@ public class AbstractHrReceivingActivity extends Activity {
         } else {
             mChart.repaint();
         }
+
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
     }
 
     @Override
@@ -210,7 +212,6 @@ public class AbstractHrReceivingActivity extends Activity {
         super.onResume();
         currentlyVisible = true;
 
-        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
 //        if (mBluetoothLeService != null) {
 //            final boolean result = mBluetoothLeService.connect(mDeviceAddress);
 //            Log.d(TAG, "Connect request result=" + result);
@@ -230,7 +231,7 @@ public class AbstractHrReceivingActivity extends Activity {
         super.onDestroy();
         currentlyVisible = false;
         unregisterReceiver(mGattUpdateReceiver);
-        unbindService(mServiceConnection);
+        unbindService(bleServiceConnection);
 //        mBluetoothLeService = null;
     }
 

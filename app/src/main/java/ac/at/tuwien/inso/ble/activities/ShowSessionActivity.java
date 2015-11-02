@@ -24,6 +24,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.achartengine.ChartFactory;
@@ -48,6 +49,7 @@ import java.util.Map;
 import ac.at.tuwien.inso.ble.HrvParameters;
 import ac.at.tuwien.inso.ble.R;
 import ac.at.tuwien.inso.ble.services.HrvParameterService;
+import ac.at.tuwien.inso.ble.utils.Baseline;
 import ac.at.tuwien.inso.ble.utils.DateHelper;
 import ac.at.tuwien.inso.ble.utils.IntentConstants;
 
@@ -72,6 +74,7 @@ public class ShowSessionActivity extends Activity implements AdapterView.OnItemS
             }
         }
     };
+    private TextView hrvParamsTxt;
     private GraphicalView chart;
     private XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
     private XYMultipleSeriesRenderer renderer = new XYMultipleSeriesRenderer();
@@ -107,6 +110,8 @@ public class ShowSessionActivity extends Activity implements AdapterView.OnItemS
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_session);
+
+        hrvParamsTxt = (TextView) findViewById(R.id.hrv_params);
 
         // Init Dropdown of parameters
         Spinner spinner = (Spinner) findViewById(R.id.params_spinner);
@@ -300,6 +305,18 @@ public class ShowSessionActivity extends Activity implements AdapterView.OnItemS
                 sendBroadcast(intent);
             }
             plot(getString(R.string.heart_rate), values);
+
+            // Compare RMSSD to baseline TODO: map noch nicht befüllt .......irgendein signal nötig, dass daten vorbei sind?
+            double baselineRmssd = Baseline.getInstance(ShowSessionActivity.this).getParams().getRmssd();
+            double rmssd = 0;
+            List<Double> rmssdValues = valueMap.get(getString(R.string.rmssd));
+            for (double val : rmssdValues) {
+                rmssd += val;
+            }
+            rmssd = rmssd / rmssdValues.size();
+            String txt = getString(R.string.rmssd) + " is " + rmssd + " (Baseline: " + baselineRmssd + ")\n";
+            txt += (rmssd > baselineRmssd ? "You improved!" : "Your baseline is better. Try out the breath pacer!");
+            hrvParamsTxt.setText(txt);
             asyncDialog.dismiss();
         }
 

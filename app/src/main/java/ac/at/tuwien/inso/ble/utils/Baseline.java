@@ -46,6 +46,10 @@ public class Baseline {
         return instance;
     }
 
+    public HrvParameters getParams() {
+        return params;
+    }
+
     /**
      * Reads the Baseline-File. If it doesn't exist the Activity to create the Baseline is loaded.
      */
